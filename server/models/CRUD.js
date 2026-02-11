@@ -8,12 +8,12 @@ import RentalSchema from './schemas.js';
  */
 export async function addRental(listing) {
   try {
-    const exists = await RentalSchema.findOne({ listingURL: listing.listingURL });
-    if (exists) return null;
-
+    // Try to create directly; handle duplicate-key race safely
     const newRental = await RentalSchema.create(listing);
-    return newRental;
+    return newRental.toObject ? newRental.toObject() : newRental;
   } catch (err) {
+    // E11000 duplicate key error -> already exists
+    if (err && err.code === 11000) return null;
     console.error('Error adding rental:', err);
     throw err;
   }
@@ -27,11 +27,17 @@ export async function addRental(listing) {
  */
 export async function updateRental(listingURL, updates) {
   try {
+    // Prevent changing the unique key
+    if (updates && Object.prototype.hasOwnProperty.call(updates, 'listingURL')) {
+      delete updates.listingURL;
+    }
+
     const updated = await RentalSchema.findOneAndUpdate(
       { listingURL },
       { $set: updates },
-      { new: true }
-    );
+      { new: true, runValidators: true, context: 'query' }
+    ).lean().exec();
+
     return updated;
   } catch (err) {
     console.error('Error updating rental:', err);
@@ -44,9 +50,18 @@ export async function updateRental(listingURL, updates) {
  * @param {string} listingURL
  * @returns {Object|null} - deleted rental or null if not found
  */
-export async function deleteRental(listingURL) {
+export async function deleteRental(listingURL, { soft = true } = {}) {
   try {
-    const deleted = await RentalSchema.findOneAndDelete({ listingURL });
+    if (soft) {
+      const updated = await RentalSchema.findOneAndUpdate(
+        { listingURL },
+        { $set: { deleted: true, deletedAt: new Date() } },
+        { new: true, runValidators: true, context: 'query' }
+      ).lean().exec();
+      return updated;
+    }
+
+    const deleted = await RentalSchema.findOneAndDelete({ listingURL }).lean().exec();
     return deleted;
   } catch (err) {
     console.error('Error deleting rental:', err);
@@ -59,9 +74,11 @@ export async function deleteRental(listingURL) {
  * @param {Object} filters - e.g., { city: 'Boston', dailyRate: { $lte: 2000 } }
  * @returns {Array} - array of matching rentals
  */
-export async function getRentals(filters = {}) {
+export async function getRentals(filters = {}, { skip = 0, limit = 50, fields = null, sort = { dailyRate: 1 } } = {}) {
   try {
-    return RentalSchema.find(filters).sort({ dailyRate: 1 });
+    const q = RentalSchema.find(filters, fields).sort(sort).skip(Number(skip)).limit(Number(limit)).lean();
+    const [results, total] = await Promise.all([q.exec(), RentalSchema.countDocuments(filters).exec()]);
+    return { results, total };
   } catch (err) {
     console.error('Error fetching rentals:', err);
     throw err;

@@ -4,7 +4,7 @@
   "description": "An app that scrapes for housing rentals",
   "main": "index.js",
   "scripts": {
-    "test": "npm vitest run"
+    "test": "vitest"
   },
   "repository": {
     "type": "git",
@@ -24,5 +24,8 @@
     "mongodb": "^7.1.0",
     "mongoose": "^9.2.0",
     "vitest": "^4.0.18"
+  }
+  ,"devDependencies": {
+    "mongodb-memory-server": "^8.11.0"
   }
 }
