@@ -4,7 +4,7 @@
   "description": "An app that scrapes for housing rentals",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm vitest run"
   },
   "repository": {
     "type": "git",
@@ -22,6 +22,7 @@
     "dotenv": "^17.2.4",
     "express": "^5.2.1",
     "mongodb": "^7.1.0",
-    "mongoose": "^9.2.0"
+    "mongoose": "^9.2.0",
+    "vitest": "^4.0.18"
   }
 }
