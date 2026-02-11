@@ -76,8 +76,13 @@ export async function deleteRental(listingURL, { soft = true } = {}) {
  */
 export async function getRentals(filters = {}, { skip = 0, limit = 50, fields = null, sort = { dailyRate: 1 } } = {}) {
   try {
-    const q = RentalSchema.find(filters, fields).sort(sort).skip(Number(skip)).limit(Number(limit)).lean();
-    const [results, total] = await Promise.all([q.exec(), RentalSchema.countDocuments(filters).exec()]);
+    const effectiveFilters = { ...filters };
+    if (!Object.prototype.hasOwnProperty.call(effectiveFilters, 'deleted')) {
+      effectiveFilters.deleted = { $ne: true };
+    }
+
+    const q = RentalSchema.find(effectiveFilters, fields).sort(sort).skip(Number(skip)).limit(Number(limit)).lean();
+    const [results, total] = await Promise.all([q.exec(), RentalSchema.countDocuments(effectiveFilters).exec()]);
     return { results, total };
   } catch (err) {
     console.error('Error fetching rentals:', err);
