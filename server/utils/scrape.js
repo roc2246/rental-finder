@@ -1,11 +1,12 @@
-import  axios from 'axios';
-import { Cheerio } from 'cheerio';
+import axios from 'axios';
+import { load } from 'cheerio';
 
 export const scrapeRentals = async (url) => {
   try {
     const { data } = await axios.get(url);
-    const $ = Cheerio.load(data);
+    const $ = load(data);
     const rentals = [];
+
 
     $('.rental-listing').each((index, element) => {
       const title = $(element).find('.rental-title').text().trim();

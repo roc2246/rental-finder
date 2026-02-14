@@ -1,9 +1,12 @@
 import express from "express";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import { connectDB } from "./models/db.js";
 import initializeChron from "./chron/index.js";
 
-dotenv.config();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, './config/.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
