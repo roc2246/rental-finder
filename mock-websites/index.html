@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Rental Websites - Test Your Scraper</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            max-width: 900px;
+            width: 100%;
+            padding: 60px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 36px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .websites-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .website-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            padding: 30px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+
+        .website-card.realty {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .website-card.apartments {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .website-card.luxe {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .website-card.quick {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+
+        .website-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+        }
+
+        .website-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .website-name {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .website-description {
+            font-size: 13px;
+            opacity: 0.95;
+            line-height: 1.5;
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            text-align: left;
+            border-radius: 6px;
+            margin-top: 30px;
+        }
+
+        .info-section h2 {
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+
+        .info-section p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .info-section ul {
+            margin-left: 20px;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .info-section li {
+            margin-bottom: 6px;
+        }
+
+        .directory-info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #856404;
+        }
+
+        code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 Mock Rental Websites</h1>
+        <p class="subtitle">
+            Test your rental finder app with these four different mock websites. Each site has a unique layout and styling for comprehensive testing.
+        </p>
+
+        <div class="websites-grid">
+            <a href="realty-hub.html" class="website-card realty">
+                <div class="website-icon">🏢</div>
+                <div class="website-name">Realty Hub</div>
+                <div class="website-description">Grid layout with filters and featured listings. Premium design for real estate.</div>
+            </a>
+
+            <a href="apartment-finder.html" class="website-card apartments">
+                <div class="website-icon">🏘️</div>
+                <div class="website-name">ApartmentFinder</div>
+                <div class="website-description">List view layout with sidebar filters. Modern apartment-focused search experience.</div>
+            </a>
+
+            <a href="luxe-stay.html" class="website-card luxe">
+                <div class="website-icon">✨</div>
+                <div class="website-name">LuxeStay</div>
+                <div class="website-description">Premium card grid with ratings and reviews. Luxury rental market style.</div>
+            </a>
+
+            <a href="quick-rent.html" class="website-card quick">
+                <div class="website-icon">⚡</div>
+                <div class="website-name">QuickRent</div>
+                <div class="website-description">Minimalist card grid with quick controls. Fast and efficient lookup design.</div>
+            </a>
+        </div>
+
+        <div class="info-section">
+            <h2>ℹ️ About These Mock Websites</h2>
+            <p>
+                These mock websites are designed to help you test your rental finder app's web scraping and data aggregation capabilities. Each site features:
+            </p>
+            <ul>
+                <li><strong>Realistic Rental Data:</strong> 6-9 rental listings with varying prices ($1,150 - $3,500/month), bedrooms, bathrooms, and square footage</li>
+                <li><strong>Diverse HTML Structures:</strong> Each website uses different HTML classes, IDs, and markup patterns to simulate real-world scraping challenges</li>
+                <li><strong>Various Layout Styles:</strong> Grid layouts, list views, card-based designs, and different CSS frameworks</li>
+                <li><strong>Property Details:</strong> Addresses, amenities, tags/badges, ratings (on some sites), and property types</li>
+                <li><strong>Responsive Design:</strong> Mobile-friendly layouts that adapt to different screen sizes</li>
+            </ul>
+            <div class="directory-info">
+                📁 <strong>File Location:</strong> All files are located in the <code>mock-websites/</code> directory at the root of your project (same level as <code>client/</code> and <code>server/</code>)
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h2>🎯 Testing Tips</h2>
+            <ul>
+                <li>Open each website to understand the HTML structure and CSS classes used</li>
+                <li>Use your browser's Developer Tools (F12) to inspect elements and identify selectors for scraping</li>
+                <li>Test your scraper against different HTML structures to ensure robustness</li>
+                <li>Compare how data is presented differently across sites (e.g., price formats, address styles)</li>
+                <li>All listings contain realistic property information you can validate against</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

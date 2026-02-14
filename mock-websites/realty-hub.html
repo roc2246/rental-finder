@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realty Hub - Find Your Perfect Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .search-bar button {
+            padding: 12px 24px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .search-bar button:hover {
+            background: #ff5252;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-weight: bold;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .listings {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .listing-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .listing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+
+        .listing-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .listing-content {
+            padding: 20px;
+        }
+
+        .price {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .price-per-month {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 15px;
+        }
+
+        .address {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .location {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .property-details {
+            display: flex;
+            justify-content: space-around;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            margin-top: 15px;
+        }
+
+        .detail {
+            text-align: center;
+        }
+
+        .detail-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+        }
+
+        .listing-tags {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: #f0f0f0;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .tag.featured {
+            background: #ffd700;
+            color: #333;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>🏠 Realty Hub</h1>
+            <div class="search-bar">
+                <input type="text" placeholder="Filter by location or property type...">
+                <button>Search</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="filters">
+            <div class="filter-group">
+                <label>Max Price</label>
+                <input type="range" min="500" max="5000" value="3000">
+            </div>
+            <div class="filter-group">
+                <label>Bedrooms</label>
+                <select>
+                    <option>Any</option>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4+</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Bathrooms</label>
+                <select>
+                    <option>Any</option>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Property Type</label>
+                <select>
+                    <option>All</option>
+                    <option>Apartment</option>
+                    <option>House</option>
+                    <option>Condo</option>
+                    <option>Townhouse</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="listings">
+            <!-- Listing 1 -->
+            <div class="listing-card">
+                <div class="listing-image">🏢 Downtown Apartment</div>
+                <div class="listing-content">
+                    <div class="price">$2,450</div>
+                    <div class="price-per-month">per month</div>
+                    <div class="address">Luxury Downtown Loft</div>
+                    <div class="location">123 Main Street, Downtown, Central District</div>
+                    <div class="property-details">
+                        <div class="detail">
+                            <div class="detail-value">2</div>
+                            <div class="detail-label">Beds</div>
+                        </div>
+                        <div class="detail">
+                            <div class="detail-value">1.5</div>
+                            <div class="detail-label">Baths</div>
+                        </div>
+                        <div class="detail">
+                            <div class="detail-value">850</div>
+                            <div class="detail-label">Sqft</div>
+                        </div>
+                    </div>
+                    <div class="listing-tags">
+                        <span class="tag featured">FEATURED</span>
+                        <span class="tag">Pet Friendly</span>
+                        <span class="tag">Gym</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listing 2 -->
+            <div class="listing-card">
+                <div class="listing-image">🏠 Garden House</div>
+                <div class="listing-content">
+                    <div class="price">$3,200</div>
+                    <div class="price-per-month">per month</div>
+                    <div class="address">Modern Family Home</div>
+                    <div class="location">456 Oak Avenue, Suburban Heights, Main</div>
+                    <div class="property-details">
+                        <div class="detail">
+                            <div class="detail-value">4</div>
+                            <div class="detail-label">Beds</div>
+                        </div>
+                        <div class="detail">
+                            <div class="detail-value">2.5</div>
+                            <div class="detail-label">Baths</div>
+                        </div>
+                        <div class="detail">
+                            <div class="detail-value">2,100</div>
+                            <div class="detail-label">Sqft</div>
+                        </div>
+                    </div>
+                    <div class="listing-tags">
+                        <span class="tag">Garage</span>
+                        <span class="tag">Yard</span>
+                        <span class="tag">New</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listing 3 -->
+            <div class="listing-card">
+                <div class="listing-image">🏢 Studio</div>
+                <div class="listing-content">
+                    <div class="price">$1,150</div>
+                    <div class="price-per-month">per month</div>
+                    <div class="address">Cozy Studio Apartment</div>
+                    <div class="location">789 Spring Lane, Arts District, West</div>
+                    <div class="property-details">
+                        <div class="detail">
+                            <div class="detail-value">1</div>
+                            <div class="detail-label">Beds</div>
+                        </div>
+                        <div class="detail">
+                            <div class="detail-value">1</div>
+                            <div class="detail-label">Baths</div>
+                        </div>
+                        <div class="detail">
+                            <div class="detail-value">500</div>
+                            <div class="detail-label">Sqft</div>
+                        </div>
+                    </div>
+                    <div class="listing-tags">
+                        <span class="tag">Utilities Included</span>
+                        <span class="tag">Downtown</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listing 4 -->
+            <div class="listing-card">
+                <div class="listing-image">🏘️ Townhouse</div>
+                <div class="listing-content">
+                    <div class="price">$2,800</div>
+                    <div class="price-per-month">per month</div>
+                    <div class="address">Elegant Townhouse</div>
+                    <div class="location">321 Maple Drive, Riverside District, South</div>
+                    <div class="property-details">
+                        <div class="detail">
+                            <div class="detail-value">3</div>
+                            <div class="detail-label">Beds</div>
+                        </div>
+                        <div class="detail">
+                            <div class="detail-value">2</div>
+                            <div class="detail-label">Baths</div>
+                        </div>
+                        <div class="detail">
+                            <div class="detail-value">1,500</div>
+                            <div class="detail-label">Sqft</div>
+                        </div>
+                    </div>
+                    <div class="listing-tags">
+                        <span class="tag">Courtyard</span>
+                        <span class="tag">Parking</span>
+                        <span class="tag">Pet Friendly</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listing 5 -->
+            <div class="listing-card">
+                <div class="listing-image">🏙️ Loft</div>
+                <div class="listing-content">
+                    <div class="price">$2,100</div>
+                    <div class="price-per-month">per month</div>
+                    <div class="address">Industrial Loft</div>
+                    <div class="location">555 Factory Street, Industrial Park, East</div>
+                    <div class="property-details">
+                        <div class="detail">
+                            <div class="detail-value">2</div>
+                            <div class="detail-label">Beds</div>
+                        </div>
+                        <div class="detail">
+                            <div class="detail-value">2</div>
+                            <div class="detail-label">Baths</div>
+                        </div>
+                        <div class="detail">
+                            <div class="detail-value">1,200</div>
+                            <div class="detail-label">Sqft</div>
+                        </div>
+                    </div>
+                    <div class="listing-tags">
+                        <span class="tag featured">NEW</span>
+                        <span class="tag">High Ceilings</span>
+                        <span class="tag">Rooftop</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listing 6 -->
+            <div class="listing-card">
+                <div class="listing-image">🏡 Cottage</div>
+                <div class="listing-content">
+                    <div class="price">$1,800</div>
+                    <div class="price-per-month">per month</div>
+                    <div class="address">Charming Cottage</div>
+                    <div class="location">888 Willow Path, Countryside, North</div>
+                    <div class="property-details">
+                        <div class="detail">
+                            <div class="detail-value">2</div>
+                            <div class="detail-label">Beds</div>
+                        </div>
+                        <div class="detail">
+                            <div class="detail-value">1</div>
+                            <div class="detail-label">Baths</div>
+                        </div>
+                        <div class="detail">
+                            <div class="detail-value">950</div>
+                            <div class="detail-label">Sqft</div>
+                        </div>
+                    </div>
+                    <div class="listing-tags">
+                        <span class="tag">Garden</span>
+                        <span class="tag">Quiet Area</span>
+                        <span class="tag">Storage</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

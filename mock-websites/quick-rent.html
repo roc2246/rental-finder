@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickRent - Find Rentals Fast</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+        }
+
+        header {
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            padding: 15px 0;
+        }
+
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1e90ff;
+        }
+
+        .quick-search {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex: 1;
+            max-width: 600px;
+            margin: 0 30px;
+        }
+
+        .quick-search input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .quick-search button {
+            padding: 10px 20px;
+            background: #1e90ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-right a {
+            color: #495057;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .main-wrapper {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .banner h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .banner p {
+            font-size: 16px;
+            opacity: 0.95;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            font-size: 13px;
+            color: #495057;
+        }
+
+        .control-group input,
+        .control-group select {
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .listing-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .listing-header h2 {
+            font-size: 22px;
+            color: #212529;
+        }
+
+        .listing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .list-listing {
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+
+        .list-listing:hover {
+            border-color: #1e90ff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .list-image {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .list-image.alt1 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .list-image.alt2 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .list-image.alt3 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .price-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .list-body {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .list-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .list-address {
+            font-size: 13px;
+            color: #868e96;
+            margin-bottom: 10px;
+        }
+
+        .list-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+            color: #495057;
+            margin: 10px 0;
+            padding: 10px 0;
+            border-top: 1px solid #f1f3f5;
+            border-bottom: 1px solid #f1f3f5;
+            flex: 1;
+            align-items: center;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .list-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 10px;
+        }
+
+        .price-display {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .price-amount {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e90ff;
+        }
+
+        .price-label {
+            font-size: 11px;
+            color: #868e96;
+        }
+
+        .btn-primary {
+            padding: 8px 16px;
+            background: #1e90ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: background 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #1a7add;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #fff3cd;
+            color: #856404;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .badge.featured {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 40px;
+            padding-bottom: 40px;
+        }
+
+        .pagination a,
+        .pagination span {
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #495057;
+            cursor: pointer;
+        }
+
+        .pagination a:hover {
+            background: #f8f9fa;
+        }
+
+        .pagination .active {
+            background: #1e90ff;
+            color: white;
+            border-color: #1e90ff;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-inner">
+            <div class="logo">🏠 QuickRent</div>
+            <div class="quick-search">
+                <input type="text" placeholder="Search by location, price, or features...">
+                <button>Search</button>
+            </div>
+            <div class="nav-right">
+                <a href="#">Browse</a>
+                <a href="#">My Alerts</a>
+                <a href="#">Sign In</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-wrapper">
+        <div class="banner">
+            <h1>Find Your Perfect Rental</h1>
+            <p>Thousands of rentals at your fingertips</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Price Range</label>
+                <input type="range" min="500" max="5000" value="3000">
+            </div>
+            <div class="control-group">
+                <label>Bedrooms</label>
+                <select>
+                    <option>All</option>
+                    <option>Studio</option>
+                    <option>1 Bed</option>
+                    <option>2 Beds</option>
+                    <option>3+ Beds</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Property Type</label>
+                <select>
+                    <option>All Types</option>
+                    <option>Apartment</option>
+                    <option>House</option>
+                    <option>Condo</option>
+                    <option>Townhouse</option>
+                    <option>Loft</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Furnished</label>
+                <select>
+                    <option>Any</option>
+                    <option>Unfurnished</option>
+                    <option>Furnished</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="listing-header">
+            <h2>Available Rentals (23 Properties)</h2>
+        </div>
+
+        <div class="listing-grid">
+            <!-- Listing 1 -->
+            <div class="list-listing">
+                <div class="list-image">
+                    <div class="price-tag">$2,450</div>
+                </div>
+                <div class="list-body">
+                    <span class="badge featured">FEATURED</span>
+                    <div class="list-title">Luxury Downtown Loft</div>
+                    <div class="list-address">123 Main Street, Downtown</div>
+                    <div class="list-meta">
+                        <span class="meta-item">2 <strong>bed</strong></span>
+                        <span class="meta-item">1.5 <strong>bath</strong></span>
+                        <span class="meta-item">850 <strong>sqft</strong></span>
+                    </div>
+                    <div class="list-footer">
+                        <div class="price-display">
+                            <span class="price-amount">$2,450</span>
+                            <span class="price-label">per month</span>
+                        </div>
+                        <button class="btn-primary">View</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listing 2 -->
+            <div class="list-listing">
+                <div class="list-image alt1">
+                    <div class="price-tag">$3,200</div>
+                </div>
+                <div class="list-body">
+                    <div class="list-title">Modern Family Home</div>
+                    <div class="list-address">456 Oak Avenue, Suburban Heights</div>
+                    <div class="list-meta">
+                        <span class="meta-item">4 <strong>bed</strong></span>
+                        <span class="meta-item">2.5 <strong>bath</strong></span>
+                        <span class="meta-item">2,100 <strong>sqft</strong></span>
+                    </div>
+                    <div class="list-footer">
+                        <div class="price-display">
+                            <span class="price-amount">$3,200</span>
+                            <span class="price-label">per month</span>
+                        </div>
+                        <button class="btn-primary">View</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listing 3 -->
+            <div class="list-listing">
+                <div class="list-image alt2">
+                    <div class="price-tag">$1,150</div>
+                </div>
+                <div class="list-body">
+                    <span class="badge">NEW LISTING</span>
+                    <div class="list-title">Cozy Studio Apartment</div>
+                    <div class="list-address">789 Spring Lane, Arts District</div>
+                    <div class="list-meta">
+                        <span class="meta-item">1 <strong>bed</strong></span>
+                        <span class="meta-item">1 <strong>bath</strong></span>
+                        <span class="meta-item">500 <strong>sqft</strong></span>
+                    </div>
+                    <div class="list-footer">
+                        <div class="price-display">
+                            <span class="price-amount">$1,150</span>
+                            <span class="price-label">per month</span>
+                        </div>
+                        <button class="btn-primary">View</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listing 4 -->
+            <div class="list-listing">
+                <div class="list-image alt3">
+                    <div class="price-tag">$2,800</div>
+                </div>
+                <div class="list-body">
+                    <div class="list-title">Elegant Townhouse</div>
+                    <div class="list-address">321 Maple Drive, Riverside District</div>
+                    <div class="list-meta">
+                        <span class="meta-item">3 <strong>bed</strong></span>
+                        <span class="meta-item">2 <strong>bath</strong></span>
+                        <span class="meta-item">1,500 <strong>sqft</strong></span>
+                    </div>
+                    <div class="list-footer">
+                        <div class="price-display">
+                            <span class="price-amount">$2,800</span>
+                            <span class="price-label">per month</span>
+                        </div>
+                        <button class="btn-primary">View</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listing 5 -->
+            <div class="list-listing">
+                <div class="list-image">
+                    <div class="price-tag">$2,100</div>
+                </div>
+                <div class="list-body">
+                    <span class="badge featured">POPULAR</span>
+                    <div class="list-title">Industrial Loft</div>
+                    <div class="list-address">555 Factory Street, Industrial Park</div>
+                    <div class="list-meta">
+                        <span class="meta-item">2 <strong>bed</strong></span>
+                        <span class="meta-item">2 <strong>bath</strong></span>
+                        <span class="meta-item">1,200 <strong>sqft</strong></span>
+                    </div>
+                    <div class="list-footer">
+                        <div class="price-display">
+                            <span class="price-amount">$2,100</span>
+                            <span class="price-label">per month</span>
+                        </div>
+                        <button class="btn-primary">View</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listing 6 -->
+            <div class="list-listing">
+                <div class="list-image alt1">
+                    <div class="price-tag">$1,800</div>
+                </div>
+                <div class="list-body">
+                    <div class="list-title">Charming Cottage</div>
+                    <div class="list-address">888 Willow Path, Countryside</div>
+                    <div class="list-meta">
+                        <span class="meta-item">2 <strong>bed</strong></span>
+                        <span class="meta-item">1 <strong>bath</strong></span>
+                        <span class="meta-item">950 <strong>sqft</strong></span>
+                    </div>
+                    <div class="list-footer">
+                        <div class="price-display">
+                            <span class="price-amount">$1,800</span>
+                            <span class="price-label">per month</span>
+                        </div>
+                        <button class="btn-primary">View</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listing 7 -->
+            <div class="list-listing">
+                <div class="list-image alt2">
+                    <div class="price-tag">$2,650</div>
+                </div>
+                <div class="list-body">
+                    <div class="list-title">Spacious Parkside Apartment</div>
+                    <div class="list-address">345 Green Park Avenue, Parkside</div>
+                    <div class="list-meta">
+                        <span class="meta-item">3 <strong>bed</strong></span>
+                        <span class="meta-item">1.5 <strong>bath</strong></span>
+                        <span class="meta-item">1,350 <strong>sqft</strong></span>
+                    </div>
+                    <div class="list-footer">
+                        <div class="price-display">
+                            <span class="price-amount">$2,650</span>
+                            <span class="price-label">per month</span>
+                        </div>
+                        <button class="btn-primary">View</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listing 8 -->
+            <div class="list-listing">
+                <div class="list-image alt3">
+                    <div class="price-tag">$3,500</div>
+                </div>
+                <div class="list-body">
+                    <span class="badge featured">LUXURY</span>
+                    <div class="list-title">Premium Penthouse</div>
+                    <div class="list-address">999 Sky Tower, Downtown Heights</div>
+                    <div class="list-meta">
+                        <span class="meta-item">3 <strong>bed</strong></span>
+                        <span class="meta-item">3 <strong>bath</strong></span>
+                        <span class="meta-item">2,200 <strong>sqft</strong></span>
+                    </div>
+                    <div class="list-footer">
+                        <div class="price-display">
+                            <span class="price-amount">$3,500</span>
+                            <span class="price-label">per month</span>
+                        </div>
+                        <button class="btn-primary">View</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listing 9 -->
+            <div class="list-listing">
+                <div class="list-image">
+                    <div class="price-tag">$1,600</div>
+                </div>
+                <div class="list-body">
+                    <span class="badge">MOVE-IN READY</span>
+                    <div class="list-title">Recently Renovated Apartment</div>
+                    <div class="list-address">212 Oak Street, Central</div>
+                    <div class="list-meta">
+                        <span class="meta-item">2 <strong>bed</strong></span>
+                        <span class="meta-item">1 <strong>bath</strong></span>
+                        <span class="meta-item">850 <strong>sqft</strong></span>
+                    </div>
+                    <div class="list-footer">
+                        <div class="price-display">
+                            <span class="price-amount">$1,600</span>
+                            <span class="price-label">per month</span>
+                        </div>
+                        <button class="btn-primary">View</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pagination">
+            <span class="active">1</span>
+            <a href="#">2</a>
+            <a href="#">3</a>
+            <a href="#">Next</a>
+        </div>
+    </div>
+</body>
+</html>
