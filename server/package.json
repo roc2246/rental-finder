@@ -2,9 +2,11 @@
   "name": "rental-finder",
   "version": "1.0.0",
   "description": "An app that scrapes for housing rentals",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "dev": "nodemon index.js"
   },
   "repository": {
     "type": "git",
@@ -19,13 +21,15 @@
   "dependencies": {
     "axios": "^1.13.5",
     "cheerio": "^1.2.0",
+    "chron": "^0.1.1",
     "dotenv": "^17.2.4",
     "express": "^5.2.1",
     "mongodb": "^7.1.0",
     "mongoose": "^9.2.0",
+    "nodemon": "^3.1.11",
     "vitest": "^4.0.18"
-  }
-  ,"devDependencies": {
+  },
+  "devDependencies": {
     "mongodb-memory-server": "^8.11.0"
   }
 }
