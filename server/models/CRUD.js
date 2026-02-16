@@ -8,11 +8,20 @@ import RentalSchema from './schemas.js';
  */
 export async function addRental(listing) {
   try {
-    // Try to create directly; handle duplicate-key race safely
-    const newRental = await RentalSchema.create(listing);
-    return newRental.toObject ? newRental.toObject() : newRental;
+    // Use an atomic upsert to avoid races: insert only if listingURL doesn't exist
+    if (!listing || !listing.listingURL) {
+      throw new Error('listing must include a listingURL');
+    }
+
+    const rental = await RentalSchema.findOneAndUpdate(
+      { listingURL: listing.listingURL },
+      { $setOnInsert: listing },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    ).lean().exec();
+
+    return rental;
   } catch (err) {
-    // E11000 duplicate key error -> already exists
+    // If a duplicate-key error still occurs, return null (already exists)
     if (err && err.code === 11000) return null;
     console.error('Error adding rental:', err);
     throw err;

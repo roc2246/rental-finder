@@ -19,6 +19,6 @@ const RentalSchema = new Schema({
 }, { timestamps: true });
 
 // Ensure unique index on listingURL
-RentalSchema.index({ listingURL: 1 }, { unique: true });
+// RentalSchema.index({ listingURL: 1 }, { unique: true });
 
 export default mongoose.model('Rental', RentalSchema);

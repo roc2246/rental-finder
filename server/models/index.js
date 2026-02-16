@@ -1,3 +1,3 @@
-export * from './schemas';
-export * from './db';
-export * from './CRUD';
+export * from './schemas.js';
+export * from './db.js';
+export * from './CRUD.js';
