@@ -13,7 +13,7 @@ export default function initializeChron() {
 
   cron.schedule("*/5 * * * *", async () => {
     let scrapedRentals = [];
-    rentalUrls.forEach(async (url) => {
+    Object.keys(rentalUrls).forEach(async (url) => {
       scrapedRentals += await utilities.scrapeRentals(url);
     });
     scrapedRentals.forEach(async (scrapedData) => {
