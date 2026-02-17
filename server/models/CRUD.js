@@ -16,7 +16,7 @@ export async function addRental(listing) {
     const rental = await RentalSchema.findOneAndUpdate(
       { listingURL: listing.listingURL },
       { $setOnInsert: listing },
-      { new: true, upsert: true, setDefaultsOnInsert: true }
+      { returnDocument: 'after', upsert: true, setDefaultsOnInsert: true }
     ).lean().exec();
 
     return rental;
@@ -44,7 +44,7 @@ export async function updateRental(listingURL, updates) {
     const updated = await RentalSchema.findOneAndUpdate(
       { listingURL },
       { $set: updates },
-      { new: true, runValidators: true, context: 'query' }
+      { returnDocument: 'after', runValidators: true, context: 'query' }
     ).lean().exec();
 
     return updated;
@@ -65,7 +65,7 @@ export async function deleteRental(listingURL, { soft = true } = {}) {
       const updated = await RentalSchema.findOneAndUpdate(
         { listingURL },
         { $set: { deleted: true, deletedAt: new Date() } },
-        { new: true, runValidators: true, context: 'query' }
+        { returnDocument: 'after', runValidators: true, context: 'query' }
       ).lean().exec();
       return updated;
     }
