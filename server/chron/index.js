@@ -11,7 +11,9 @@ export default function initializeChron() {
     apartmentFinder: "apartment-finder.html",
   };
 
-  cron.schedule("*/5 * * * *", async () => {
+  const time = process.env.DEV_ENV === "local" ? "*/1 * * * *" : "*/5 * * * *"; 
+
+  cron.schedule(time, async () => {
     try {
       const urls = Object.values(rentalUrls);
 
