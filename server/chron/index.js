@@ -31,6 +31,7 @@ export default function initializeChron() {
 
       // Insert rentals in bounded-size batches to limit DB concurrency and memory
       await utilities.manageBatchSize(10, allRentals, models.addRental);
+      await utilities.manageBatchSize(10, allRentals, models.deleteRental);
     } catch (error) {
       console.error("Cron job error:", error);
     }
