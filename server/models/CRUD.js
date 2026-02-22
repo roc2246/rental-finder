@@ -73,7 +73,7 @@ export async function deleteRental(listing) {
       listingURL: listing.listingURL,
     });
     if (!exists) {
-      deleted = await RentalSchema.findOneAndDelete({ listingURL })
+      deleted = await RentalSchema.findOneAndDelete({ listingURL: listing.listingURL })
         .lean()
         .exec();
     }
