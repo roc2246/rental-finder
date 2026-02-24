@@ -3,6 +3,7 @@ import { load } from 'cheerio';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { siteDir } from './site-dir.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -29,10 +30,10 @@ export const scrapeRentals = async (url) => {
     const $ = load(data);
     const rentals = [];
 
-    $('.rental-listing').each((index, element) => {
-      const title = $(element).find('.rental-title').text().trim();
-      const price = $(element).find('.rental-price').text().trim();
-      const location = $(element).find('.rental-location').text().trim();
+    $(siteDir.general.listing).each((index, element) => {
+      const title = $(element).find(siteDir.general.title).text().trim();
+      const price = $(element).find(siteDir.general.price).text().trim();
+      const location = $(element).find(siteDir.general.location).text().trim();
       rentals.push({ title, price, location });
     });
 
