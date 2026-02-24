@@ -48,7 +48,11 @@ export const scrapeRentals = async (url) => {
 
     if (typeof data !== "string") data = data.toString();
 
-    const rentals = findData(data, "general");
+    let rentals = [];
+    for(const site in siteDir) { 
+      rentals = rentals.concat(findData(data, site));
+      console.log(`Found ${rentals.length} rentals for site: ${site}`);
+    }
 
     return rentals;
   } catch (error) {
