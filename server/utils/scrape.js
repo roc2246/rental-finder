@@ -29,22 +29,25 @@ function findData(data, site) {
   return rentals;
 }
 
-export const scrapeRentals = async (url) => {
-  try {
-    let data;
+async function manageData(url) {
+   let data;
 
-    // Determine if URL is web or local file and fetch accordingly
     if (/^https?:\/\//i.test(url)) {
       const resp = await axios.get(url);
       data = resp.data;
     } else {
       data = await readLocalFile(url);
     }
+  return data;
+}
 
-    // Ensure data is a string
+export const scrapeRentals = async (url) => {
+  try {
+   
+    const data = await manageData(url);
+
     if (typeof data !== "string") data = data.toString();
 
-    // Use general site configuration for all local files
     const rentals = findData(data, "general");
 
     return rentals;
