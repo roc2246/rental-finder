@@ -36,23 +36,25 @@ export async function addRental(listing) {
  * @param {Object} updates - fields to update
  * @returns {Object|null} - updated rental or null if not found
  */
-export async function updateRental(listingURL, updates) {
+export async function updateRental(listing) {
   try {
-    // Prevent changing the unique key
-    if (
-      updates &&
-      Object.prototype.hasOwnProperty.call(updates, "listingURL")
-    ) {
-      delete updates.listingURL;
+    const exists = await RentalSchema.exists({
+      listingURL: listing.listingURL,
+    });
+    const hasChanged = await RentalSchema.exists({
+      listingURL: listing.listingURL,
+      ...listing,
+    });
+    let updated = null;
+    if (exists && hasChanged) {
+      updated = await RentalSchema.findOneAndUpdate(
+        { listingURL: listing.listingURL },
+        { $set: listing },
+        { returnDocument: "after" },
+      )
+        .lean()
+        .exec();
     }
-
-    const updated = await RentalSchema.findOneAndUpdate(
-      { listingURL },
-      { $set: updates },
-      { returnDocument: "after", runValidators: true, context: "query" },
-    )
-      .lean()
-      .exec();
 
     return updated;
   } catch (err) {
@@ -73,7 +75,9 @@ export async function deleteRental(listing) {
       listingURL: listing.listingURL,
     });
     if (!exists) {
-      deleted = await RentalSchema.findOneAndDelete({ listingURL: listing.listingURL })
+      deleted = await RentalSchema.findOneAndDelete({
+        listingURL: listing.listingURL,
+      })
         .lean()
         .exec();
     }

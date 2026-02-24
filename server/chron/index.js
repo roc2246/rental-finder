@@ -11,7 +11,7 @@ export default function initializeChron() {
     apartmentFinder: "apartment-finder.html",
   };
 
-  const time = process.env.DEV_ENV === "local" ? "*/1 * * * *" : "*/5 * * * *"; 
+  const time = process.env.DEV_ENV === "local" ? "*/1 * * * *" : "*/5 * * * *";
 
   cron.schedule(time, async () => {
     try {
@@ -29,9 +29,11 @@ export default function initializeChron() {
 
       console.log("Scraped rentals total:", allRentals.length);
 
-      // Insert rentals in bounded-size batches to limit DB concurrency and memory
-      await utilities.manageBatchSize(10, allRentals, models.addRental);
-      await utilities.manageBatchSize(10, allRentals, models.deleteRental);
+      const batchSize = 10;
+      const modelstorun = [models.addRental, models.updateRental, models.deleteRental];
+      for (const model of modelstorun) {
+        await utilities.manageBatchSize(batchSize, allRentals, model);
+      }
     } catch (error) {
       console.error("Cron job error:", error);
     }
