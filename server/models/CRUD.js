@@ -8,23 +8,20 @@ import RentalSchema from "./schemas.js";
  */
 export async function addRental(listing) {
   try {
-    // Use an atomic upsert to avoid races: insert only if listingURL doesn't exist
+    // Validate input
     if (!listing || !listing.listingURL) {
       throw new Error("listing must include a listingURL");
     }
 
-    const rental = await RentalSchema.findOneAndUpdate(
-      { listingURL: listing.listingURL },
-      { $setOnInsert: listing },
-      { returnDocument: "after", upsert: true, setDefaultsOnInsert: true },
-    )
-      .lean()
-      .exec();
-
-    return rental;
+    // Try to insert - if duplicate exists, will throw error which we catch
+    const result = new RentalSchema(listing);
+    const rental = await result.save();
+    return rental.toObject();
   } catch (err) {
-    // If a duplicate-key error still occurs, return null (already exists)
-    if (err && err.code === 11000) return null;
+    // If a duplicate-key error occurs, the rental already exists
+    if (err && (err.code === 11000 || err.code === 11001)) {
+      return null;
+    }
     console.error("Error adding rental:", err);
     throw err;
   }
@@ -38,23 +35,34 @@ export async function addRental(listing) {
  */
 export async function updateRental(listing) {
   try {
-    const exists = await RentalSchema.exists({
+    // First check if rental exists
+    const exists = await RentalSchema.findOne({
       listingURL: listing.listingURL,
     });
-    const hasChanged = await RentalSchema.exists({
-      listingURL: listing.listingURL,
-      ...listing,
-    });
-    let updated = null;
-    if (exists && hasChanged) {
-      updated = await RentalSchema.findOneAndUpdate(
-        { listingURL: listing.listingURL },
-        { $set: listing },
-        { returnDocument: "after" },
-      )
-        .lean()
-        .exec();
+    
+    if (!exists) return null;
+    
+
+    // Check if any fields are actually different
+    let hasChanges = false;
+    for (const key in listing) {
+      if (key !== 'listingURL' && exists[key] !== listing[key]) {
+        hasChanges = true;
+        break;
+      }
     }
+
+    if (!hasChanges) return null;
+    
+
+    // Update the document
+    const updated = await RentalSchema.findOneAndUpdate(
+      { listingURL: listing.listingURL },
+      { $set: listing },
+      { returnDocument: "after" },
+    )
+      .lean()
+      .exec();
 
     return updated;
   } catch (err) {
@@ -70,17 +78,12 @@ export async function updateRental(listing) {
  */
 export async function deleteRental(listing) {
   try {
-    let deleted;
-    const exists = await RentalSchema.exists({
+    const deleted = await RentalSchema.findOneAndDelete({
       listingURL: listing.listingURL,
-    });
-    if (!exists) {
-      deleted = await RentalSchema.findOneAndDelete({
-        listingURL: listing.listingURL,
-      })
-        .lean()
-        .exec();
-    }
+    })
+      .lean()
+      .exec();
+    
     return deleted;
   } catch (err) {
     console.error("Error deleting rental:", err);
@@ -97,7 +100,7 @@ export async function getRentals(
   filters = {},
   page = 1,
   pageSize = 20,
-  sort = { price: 1 },
+  sort = { dailyRate: 1 },
 ) {
   try {
     // Calculate how many documents to skip
