@@ -91,7 +91,7 @@ export async function deleteRental(listing) {
 /**
  * Fetch rentals with optional filters
  * @param {Object} filters - e.g., { city: 'Boston', dailyRate: { $lte: 2000 } }
- * @returns {Array} - array of matching rentals
+ * @returns {Promise<{results: Array, total: number, page: number, pageSize: number, totalPages: number}>} - search results with pagination info
  */
 export async function getRentals(
   filters = {},
