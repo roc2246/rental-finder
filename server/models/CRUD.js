@@ -95,24 +95,31 @@ export async function deleteRental(listing) {
  */
 export async function getRentals(
   filters = {},
-  { skip = 0, limit = 50, fields = null, sort = { dailyRate: 1 } } = {},
+  page = 1,
+  pageSize = 20,
+  sort = { price: 1 },
 ) {
   try {
-    const effectiveFilters = { ...filters };
-    if (!Object.prototype.hasOwnProperty.call(effectiveFilters, "deleted")) {
-      effectiveFilters.deleted = { $ne: true };
-    }
+    // Calculate how many documents to skip
+    const skip = (page - 1) * pageSize;
 
-    const q = RentalSchema.find(effectiveFilters, fields)
+    const results = await RentalSchema.find(filters)
       .sort(sort)
-      .skip(Number(skip))
-      .limit(Number(limit))
-      .lean();
-    const [results, total] = await Promise.all([
-      q.exec(),
-      RentalSchema.countDocuments(effectiveFilters).exec(),
-    ]);
-    return { results, total };
+      .skip(skip) // skip documents from previous pages
+      .limit(pageSize) // limit to pageSize
+      .lean()
+      .exec();
+
+    // Optional: get total count for frontend pagination
+    const total = await RentalSchema.countDocuments(filters);
+
+    return {
+      results,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
   } catch (err) {
     console.error("Error fetching rentals:", err);
     throw err;
