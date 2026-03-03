@@ -1,6 +1,6 @@
 import "./App.css";
 import React from "react";
-import * as fetchLib from "./fettch-library.js"
+import * as fetchLib from "./js/fetch-library.js"
 
 function App() {
 
