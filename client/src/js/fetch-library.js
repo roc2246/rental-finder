@@ -1,11 +1,19 @@
+function appendParams(args){
+  const params = new URLSearchParams();
+  for(const key in args){
+    if(typeof args[key] === 'object'){
+      params.append(key, JSON.stringify(args[key]));
+    } else {
+      params.append(key, args[key]);
+    }
+  }
+  return params
+}
+
 export async function fetchListings(filters = {}, page = 1, pageSize = 20, sort = {}) {
   try {
     // build query parameters using URLSearchParams to ensure proper encoding
-    const params = new URLSearchParams();
-    params.append('filters', JSON.stringify(filters));
-    params.append('page', page);
-    params.append('pageSize', pageSize);
-    params.append('sort', JSON.stringify(sort));
+    const params = appendParams(arguments);
 
     const response = await fetch(`/api/listings?${params.toString()}`, {
       method: "GET",
