@@ -1,5 +1,5 @@
 import * as models from "../models/index.js";
-import * as utils from "./index.js";
+import * as utils from "../utils/index.js";
 
 /**
  * HTTP endpoint handler for retrieving rentals with filtering and pagination
