@@ -1,20 +1,5 @@
 import * as models from "../models/index.js";
-
-function parseJsonOrValue(value, defaultValue) {
-  if (value === undefined || value === null || value === "") {
-    return defaultValue;
-  }
-  
-  if (typeof value === "string") {
-    try {
-      return JSON.parse(value);
-    } catch {
-      // not valid JSON, return as is (could be simple value)
-      return value;
-    }
-  }
-  return value;
-}
+import * as utils from "./index.js";
 
 /**
  * HTTP endpoint handler for retrieving rentals with filtering and pagination
@@ -38,10 +23,10 @@ export async function manageRentalRetrieval(req, res) {
     const rawSort = req.query.sort;
 
     const args = {
-      filters: parseJsonOrValue(rawFilters, {}),
+      filters: utils.parseJsonOrValue(rawFilters, {}),
       page: parseInt(req.query.page) || 1,
       pagesize: parseInt(req.query.pageSize || req.query.pagesize) || 20,
-      sort: parseJsonOrValue(rawSort, { dailyRate: 1 }),
+      sort: utils.parseJsonOrValue(rawSort, { dailyRate: 1 }),
     };
 
     const rentals = await models.getRentals(
