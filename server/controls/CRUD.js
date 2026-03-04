@@ -17,12 +17,32 @@ import * as models from "../models/index.js";
  */
 export async function manageRentalRetrieval(req, res) {
   try {
-    const args = {
-      filters: req.query.filters || {},
-      page: parseInt(req.query.page) || 1,
-      pagesize: parseInt(req.query.pagesize) || 20,
-      sort: req.query.sort || { dailyRate: 1 },
+    // parse query parameters, accepting either stringified values or raw objects
+    const rawFilters = req.query.filters;
+    const rawSort = req.query.sort;
+
+    const parseJsonOrValue = (value, defaultValue) => {
+      if (value === undefined || value === null || value === "") {
+        return defaultValue;
+      }
+      if (typeof value === "string") {
+        try {
+          return JSON.parse(value);
+        } catch {
+          // not valid JSON, return as is (could be simple value)
+          return value;
+        }
+      }
+      return value;
     };
+
+    const args = {
+      filters: parseJsonOrValue(rawFilters, {}),
+      page: parseInt(req.query.page) || 1,
+      pagesize: parseInt(req.query.pageSize || req.query.pagesize) || 20,
+      sort: parseJsonOrValue(rawSort, { dailyRate: 1 }),
+    };
+
     const rentals = await models.getRentals(
       args.filters,
       args.page,

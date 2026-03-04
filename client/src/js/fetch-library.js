@@ -1,17 +1,23 @@
-export async function fetchListings(filters, page, pageSize, sort) {
+export async function fetchListings(filters = {}, page = 1, pageSize = 20, sort = {}) {
   try {
-    const response = await fetch("/api/listings", {
+    // build query parameters using URLSearchParams to ensure proper encoding
+    const params = new URLSearchParams();
+    params.append('filters', JSON.stringify(filters));
+    params.append('page', page);
+    params.append('pageSize', pageSize);
+    params.append('sort', JSON.stringify(sort));
+
+    const response = await fetch(`/api/listings?${params.toString()}`, {
       method: "GET",
-      body: {
-        filters: filters,
-        page: page,
-        pageSize: pageSize,
-        sort: sort,
-      },
     });
+    if (!response.ok) {
+      throw new Error(`Server returned ${response.status}`);
+    }
     const data = await response.json();
     console.log(data);
+    return data;
   } catch (error) {
     console.error("Error fetching listings:", error);
+    throw error;
   }
 }

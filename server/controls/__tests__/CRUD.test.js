@@ -74,6 +74,19 @@ describe('manageRentalRetrieval', () => {
       expect(models.getRentals).toHaveBeenCalledWith({}, 1, 20, { dailyRate: -1 });
     });
 
+    it('handles camelCase pageSize and JSON string parameters', async () => {
+      // simulate client sending encoded values
+      req.query.pageSize = '30';
+      req.query.sort = JSON.stringify({ dailyRate: -1 });
+      req.query.filters = JSON.stringify({ city: 'Boston' });
+
+      models.getRentals.mockResolvedValue({ results: [], total: 0 });
+
+      await controls.manageRentalRetrieval(req, res);
+
+      expect(models.getRentals).toHaveBeenCalledWith({ city: 'Boston' }, 1, 30, { dailyRate: -1 });
+    });
+
     it('returns paginated results with all metadata', async () => {
       const mockResponse = {
         results: [

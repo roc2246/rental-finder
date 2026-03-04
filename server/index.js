@@ -30,6 +30,10 @@ app.get("/health", (req, res) => res.json({ status: "ok" }));
 // Initialize scheduled/cron tasks (e.g., periodic scraping)
 initializeChron();
 
+// mount our API routes under /api so the frontend proxy can forward correctly
+import apiRoutes from "./routes/index.js";
+app.use("/api", apiRoutes);
+
 /**
  * Starts the Express server and establishes database connection
  * @async

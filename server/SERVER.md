@@ -39,16 +39,34 @@ Response: { status: "ok" }
 ```
 
 ### Retrieve Rentals
+
+This endpoint is available under both:
 ```
-GET /rentals?filters={...}&page=1&pagesize=20&sort={...}
+GET /api/rentals
+GET /api/listings   (alias used by the frontend)
+```
 
-Query Parameters:
-  - filters (JSON string): Filter criteria, e.g. {"city":"Boston"}
+The path accepts the following query parameters (JSON string values may be
+provided either as raw objects or stringified):
+
+```
+?filters={...}&page=1&pagesize=20&sort={...}
+```
+
+or with camel‑case names (supported for convenience):
+
+```
+?filters={...}&page=1&pageSize=20&sort={...}
+```
+
+#### Query Parameters
+  - filters (JSON string/object): Filter criteria, e.g. `{"city":"Boston"}`
   - page (number): Page number for pagination (default: 1)
-  - pagesize (number): Results per page (default: 20)
-  - sort (JSON string): Sort criteria, e.g. {"price":1} (default: ascending by price)
+  - pagesize / pageSize (number): Results per page (default: 20)
+  - sort (JSON string/object): Sort criteria, e.g. `{"price":1}` (default: ascending by price)
 
-Response:
+#### Response
+```json
 {
   "results": [
     { "title": "...", "price": "...", "location": "..." },
