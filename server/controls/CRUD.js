@@ -1,5 +1,21 @@
 import * as models from "../models/index.js";
 
+function parseJsonOrValue(value, defaultValue) {
+  if (value === undefined || value === null || value === "") {
+    return defaultValue;
+  }
+  
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value);
+    } catch {
+      // not valid JSON, return as is (could be simple value)
+      return value;
+    }
+  }
+  return value;
+}
+
 /**
  * HTTP endpoint handler for retrieving rentals with filtering and pagination
  * @async
@@ -21,21 +37,6 @@ export async function manageRentalRetrieval(req, res) {
     const rawFilters = req.query.filters;
     const rawSort = req.query.sort;
 
-    const parseJsonOrValue = (value, defaultValue) => {
-      if (value === undefined || value === null || value === "") {
-        return defaultValue;
-      }
-      if (typeof value === "string") {
-        try {
-          return JSON.parse(value);
-        } catch {
-          // not valid JSON, return as is (could be simple value)
-          return value;
-        }
-      }
-      return value;
-    };
-
     const args = {
       filters: parseJsonOrValue(rawFilters, {}),
       page: parseInt(req.query.page) || 1,
@@ -51,7 +52,7 @@ export async function manageRentalRetrieval(req, res) {
     );
     res.json(rentals);
   } catch (error) {
-    const errorMessage = error?.message || 'Unknown error occurred';
+    const errorMessage = error?.message || "Unknown error occurred";
     res.status(500).json({ error: errorMessage });
   }
 }
