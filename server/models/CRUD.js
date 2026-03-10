@@ -102,16 +102,9 @@ export async function deleteRental(listings, batchSize = 100) {
 
       console.log("Deleted rentals total:", totalDeleted);
       return { deletedCount: totalDeleted };
-    }
+    } 
 
-    const deleted = await RentalSchema.findOneAndDelete({
-      listingURL: listings.listingURL,
-    })
-      .lean()
-      .exec();
-
-    console.log("Deleted rentals total:", deleted ? 1 : 0);
-    return deleted;
+    return null;
   } catch (err) {
     console.error("Error deleting rental:", err);
     throw err;
