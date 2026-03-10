@@ -1,17 +1,22 @@
 import "./App.css";
+import "./App.css";
 import React from "react";
 import * as fetchLib from "./js/fetch-library.js";
+import Filters from "./sections/Filters.jsx";
 import Pagination from "./sections/Pagination.jsx";
 import ListingsGrid from "./sections/ListingsGrid.jsx";
 
 function App() {
-  // UI state for filters and data
+  // filter / sort / pagination state lifted to app level
+  const [zip, setZip] = React.useState("");
   const [sortBy, setSortBy] = React.useState("dailyRate"); // API uses dailyRate/rent
+  const [page, setPage] = React.useState(1);
+
+  // data returned from server
   const [listings, setListings] = React.useState([]);
   const [totalPages, setTotalPages] = React.useState(1);
 
   // load data whenever filters/page/sort change
-  // whenever filters or pagination state change we need to fetch new data
   React.useEffect(() => {
     async function loadData() {
       try {
@@ -46,14 +51,23 @@ function App() {
   return (
     <div className="app-container">
       {/* Filters (zip code, sort by) */}
-      <Filters />
+      <Filters
+        zip={zip}
+        setZip={setZip}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+      />
 
       {/* Listings grid */}
       <ListingsGrid listings={listings} />
 
       {/* simple pagination controls */}
       {totalPages > 1 && (
-        <Pagination currentPage={page} totalPages={totalPages} />
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
       )}
     </div>
   );

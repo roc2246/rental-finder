@@ -1,7 +1,5 @@
-import { useState } from "react";
-export default function Filters() {
-  const [zip, setZip] = useState("");
-
+// filters are controlled by the parent app; state is lifted
+export default function Filters({ zip, setZip, sortBy, setSortBy }) {
   return (
     <section className="filters">
       <label>
