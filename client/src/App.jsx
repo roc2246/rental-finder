@@ -8,7 +8,6 @@ import ListingsGrid from "./sections/ListingsGrid.jsx";
 
 function App() {
   // filter / sort / pagination state lifted to app level
-  const [zip, setZip] = React.useState("");
   const [sortBy, setSortBy] = React.useState("dailyRate"); // API uses dailyRate/rent
   const [page, setPage] = React.useState(1);
 
@@ -21,10 +20,6 @@ function App() {
     async function loadData() {
       try {
         const filters = {};
-        if (zip.trim()) {
-          // server accepts arbitrary filters; using 'zip' here for demonstration
-          filters.zip = zip.trim();
-        }
         const sort = {};
         if (sortBy) {
           sort[sortBy] = 1; // ascending
@@ -41,19 +36,17 @@ function App() {
     }
 
     loadData();
-  }, [zip, sortBy, page]);
+  }, [sortBy, page]);
 
   // reset to first page when user changes filters or sort
   React.useEffect(() => {
     setPage(1);
-  }, [zip, sortBy]);
+  }, [sortBy]);
 
   return (
     <div className="app-container">
       {/* Filters (zip code, sort by) */}
       <Filters
-        zip={zip}
-        setZip={setZip}
         sortBy={sortBy}
         setSortBy={setSortBy}
       />
