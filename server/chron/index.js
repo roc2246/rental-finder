@@ -35,7 +35,7 @@ export default function initializeChron() {
         await utilities.manageBatchSize(batchSize, allRentals, model);
       }
 
-      await models.deleteRental(allRentals);
+      await models.deleteRental(allRentals, batchSize);
     } catch (error) {
       console.error("Cron job error:", error);
     }
