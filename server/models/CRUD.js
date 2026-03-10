@@ -39,21 +39,19 @@ export async function updateRental(listing) {
     const exists = await RentalSchema.findOne({
       listingURL: listing.listingURL,
     });
-    
+
     if (!exists) return null;
-    
 
     // Check if any fields are actually different
     let hasChanges = false;
     for (const key in listing) {
-      if (key !== 'listingURL' && exists[key] !== listing[key]) {
+      if (key !== "listingURL" && exists[key] !== listing[key]) {
         hasChanges = true;
         break;
       }
     }
 
     if (!hasChanges) return null;
-    
 
     // Update the document
     const updated = await RentalSchema.findOneAndUpdate(
@@ -76,14 +74,43 @@ export async function updateRental(listing) {
  * @param {string} listingURL
  * @returns {Object|null} - deleted rental or null if not found
  */
-export async function deleteRental(listing) {
+export async function deleteRental(listings, batchSize = 100) {
   try {
+    if (!listings) {
+      throw new Error("deleteRental requires a listing object or an array of listings");
+    }
+
+    if (Array.isArray(listings)) {
+      const keepUrls = listings.map((l) => l.listingURL);
+
+      const toDelete = await RentalSchema.find({
+        listingURL: { $nin: keepUrls },
+      })
+        .lean()
+        .exec();
+
+      let totalDeleted = 0;
+
+      for (let i = 0; i < toDelete.length; i += batchSize) {
+        const chunk = toDelete.slice(i, i + batchSize);
+        const urls = chunk.map((r) => r.listingURL);
+        const result = await RentalSchema.deleteMany({
+          listingURL: { $in: urls },
+        }).exec();
+        totalDeleted += result.deletedCount || 0;
+      }
+
+      console.log("Deleted rentals total:", totalDeleted);
+      return { deletedCount: totalDeleted };
+    }
+
     const deleted = await RentalSchema.findOneAndDelete({
-      listingURL: listing.listingURL,
+      listingURL: listings.listingURL,
     })
       .lean()
       .exec();
-    
+
+    console.log("Deleted rentals total:", deleted ? 1 : 0);
     return deleted;
   } catch (err) {
     console.error("Error deleting rental:", err);

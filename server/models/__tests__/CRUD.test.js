@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { beforeAll, afterAll, beforeEach, describe, it, expect } from 'vitest';
 import * as CRUD from '../CRUD.js';
+import RentalSchema from '../schemas.js';
 
 let mongod;
 
@@ -210,6 +211,43 @@ describe('CRUD functions', () => {
 
       const second = await CRUD.deleteRental(listing);
       expect(second).toBeNull();
+    });
+
+    it('bulk-removes rentals not present in provided array', async () => {
+      const keep = { title: 'Keep', listingURL: 'http://keep' };
+      const remove = { title: 'Remove', listingURL: 'http://remove' };
+      await CRUD.addRental(keep);
+      await CRUD.addRental(remove);
+
+      // use a small batch size to force at least one chunk
+      const result = await CRUD.deleteRental([keep], 1);
+      expect(result).toBeTruthy();
+      expect(result.deletedCount).toBe(1);
+
+      const page = await CRUD.getRentals();
+      expect(page.results.length).toBe(1);
+      expect(page.results[0].listingURL).toBe(keep.listingURL);
+    });
+
+    it('honors batchSize when deleting many entries', async () => {
+      // create a few rentals and keep only one
+      const keep = { title: 'KeepAll', listingURL: 'http://keep-all' };
+      const others = [];
+      for (let i = 0; i < 4; i++) {
+        const r = { title: `Other${i}`, listingURL: `http://r${i}` };
+        others.push(r);
+        await CRUD.addRental(r);
+      }
+      await CRUD.addRental(keep);
+
+      const spy = vi.spyOn(RentalSchema, 'deleteMany');
+
+      const result = await CRUD.deleteRental([keep], 2);
+      expect(result.deletedCount).toBe(4);
+      expect(spy).toHaveBeenCalled();
+      expect(spy.mock.calls.length).toBeGreaterThanOrEqual(2);
+
+      spy.mockRestore();
     });
   });
 

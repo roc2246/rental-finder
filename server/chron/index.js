@@ -30,10 +30,12 @@ export default function initializeChron() {
       console.log("Scraped rentals total:", allRentals.length);
 
       const batchSize = 10;
-      const modelstorun = [models.addRental, models.updateRental, models.deleteRental];
+      const modelstorun = [models.addRental, models.updateRental];
       for (const model of modelstorun) {
         await utilities.manageBatchSize(batchSize, allRentals, model);
       }
+
+      await models.deleteRental(allRentals);
     } catch (error) {
       console.error("Cron job error:", error);
     }
