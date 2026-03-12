@@ -1,6 +1,6 @@
 # Rental Finder
 
-![Screenshot of Rental Finder](screenshots/screenshot1.png)
+![Screenshot of Rental Finder](screenshots/main-page.png)
 
 
 A full‑stack project for discovering housing rental listings. The
