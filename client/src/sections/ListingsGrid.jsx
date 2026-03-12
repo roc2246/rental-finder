@@ -10,9 +10,9 @@ export default function ListingsGrid({ listings }) {
       {listings.length === 0 && <p>No rentals found.</p>}
 
       {listings.map((l, idx) => {
-        const isThereRent = l?.rent ? `$${l.rent}` : "";
-        const rateOrRent =
-          l?.dailyRate != null ? `$${l.dailyRate}` : isThereRent;
+        const isThereRent = l?.rent ? `${l.rent}` : "";
+        const priceOrRent =
+          l?.price != null ? `${l.price}` : isThereRent;
 
         return (
           <div
@@ -22,7 +22,7 @@ export default function ListingsGrid({ listings }) {
             style={{ cursor: l.listingURL ? "pointer" : "default" }}
           >
             <div className="rental-title">{l.title || "Untitled"}</div>
-            <div className="rental-price">{rateOrRent}</div>
+            <div className="rental-price">{priceOrRent}</div>
             <div className="rental-location">{l.city || l.location || ""}</div>
           </div>
         );
