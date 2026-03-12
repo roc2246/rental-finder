@@ -8,7 +8,7 @@ import ListingsGrid from "./sections/ListingsGrid.jsx";
 
 function App() {
   // filter / sort / pagination state lifted to app level
-  const [sortBy, setSortBy] = React.useState("dailyRate"); // API uses dailyRate/rent
+  const [sortBy, setSortBy] = React.useState("price"); // API uses dailyRate/rent
   const [page, setPage] = React.useState(1);
 
   // data returned from server
