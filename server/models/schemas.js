@@ -4,14 +4,14 @@ const Schema = mongoose.Schema;
 
 const RentalSchema = new Schema({
   title: { type: String },
-  city: { type: String, index: true },
+  location: { type: String, index: true },
   street: { type: String },
   category: { type: String },
   image: { type: String },
   bedrooms: { type: Number },
   shared: { type: Boolean },
   description: { type: String },
-  rent: { type: Number },
+  price: { type: String },
   dailyRate: { type: Number, index: true },
   listingURL: { type: String, required: true, unique: true },
   deleted: { type: Boolean, default: false, index: true },
