@@ -1,5 +1,8 @@
 # Rental Finder
 
+![Screenshot of Rental Finder](screenshots/screenshot1.png)
+
+
 A full‑stack project for discovering housing rental listings. The
 application consists of two separate codebases:
 
