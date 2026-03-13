@@ -1,10 +1,15 @@
 export function appendParams(args) {
   const params = new URLSearchParams();
-  for (const key in args) {
-    if (typeof args[key] === "object") {
-      params.append(key, JSON.stringify(args[key]));
+  for (const [key, value] of Object.entries(args)) {
+    if (value === undefined || value === null) {
+      continue;
+    }
+
+    if (typeof value === "object") {
+      // Send objects as JSON so the server can parse query filters/sort.
+      params.append(key, JSON.stringify(value));
     } else {
-      params.append(key, args[key]);
+      params.append(key, String(value));
     }
   }
   return params;

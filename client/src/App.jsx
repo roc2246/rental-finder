@@ -1,5 +1,4 @@
 import "./App.css";
-import "./App.css";
 import React from "react";
 import * as fetchLib from "./js/fetch-library.js";
 import Filters from "./sections/Filters.jsx";
@@ -9,6 +8,7 @@ import ListingsGrid from "./sections/ListingsGrid.jsx";
 function App() {
   // filter / sort / pagination state lifted to app level
   const [sortBy, setSortBy] = React.useState("price"); // API uses dailyRate/rent
+  const [locationQuery, setLocationQuery] = React.useState("");
   const [page, setPage] = React.useState(1);
 
   // data returned from server
@@ -20,6 +20,10 @@ function App() {
     async function loadData() {
       try {
         const filters = {};
+        if (locationQuery.trim()) {
+          filters.location = { $regex: locationQuery.trim(), $options: "i" };
+        }
+
         const sort = {};
         if (sortBy) {
           sort[sortBy] = 1; // ascending
@@ -36,12 +40,12 @@ function App() {
     }
 
     loadData();
-  }, [sortBy, page]);
+  }, [sortBy, page, locationQuery]);
 
   // reset to first page when user changes filters or sort
   React.useEffect(() => {
     setPage(1);
-  }, [sortBy]);
+  }, [sortBy, locationQuery]);
 
   return (
     <div className="app-container">
@@ -49,6 +53,8 @@ function App() {
       <Filters
         sortBy={sortBy}
         setSortBy={setSortBy}
+        locationQuery={locationQuery}
+        setLocationQuery={setLocationQuery}
       />
 
       {/* Listings grid */}
