@@ -14,8 +14,8 @@ export default function ListingsGrid({ listings }) {
           <div key={l.listingURL || idx} className="rental-listing">
             <div className="rental-title">{l.title || "Untitled"}</div>
             <div className="rental-price">{l.price || "N/A"}</div>
-            <div className="rental-location">{l.city || l.location || ""}</div>
-            <a href={listingHref} target="_blank" rel="noopener noreferrer">
+            <div className="rental-location">{l.location || "N/A"}</div>
+            <a className="rental-link" href={listingHref} target="_blank" rel="noopener noreferrer">
               View Listing
             </a>
           </div>
