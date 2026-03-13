@@ -1,11 +1,21 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import axios from 'axios';
 import * as scrape from '../scrape.js';
 
 vi.mock('axios');
 
+let consoleLogSpy;
+let consoleErrorSpy;
+
 beforeEach(() => {
   vi.clearAllMocks();
+  consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+  consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+});
+
+afterEach(() => {
+  consoleLogSpy.mockRestore();
+  consoleErrorSpy.mockRestore();
 });
 
 describe('scrapeRentals', () => {
@@ -298,58 +308,40 @@ describe('scrapeRentals', () => {
       const error = new Error('network failure');
       axios.get.mockRejectedValue(error);
 
-      const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
       await expect(scrape.scrapeRentals('http://bad')).rejects.toThrow(error);
-      expect(errSpy).toHaveBeenCalled();
-
-      errSpy.mockRestore();
+      expect(consoleErrorSpy).toHaveBeenCalled();
     });
 
     it('logs and rethrows connection timeout errors', async () => {
       const error = new Error('ETIMEDOUT');
       axios.get.mockRejectedValue(error);
 
-      const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
       await expect(scrape.scrapeRentals('http://slow')).rejects.toThrow('ETIMEDOUT');
-      expect(errSpy).toHaveBeenCalledWith('Error scraping rentals:', error);
-
-      errSpy.mockRestore();
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error scraping rentals:', error);
     });
 
     it('logs and rethrows connection refused errors', async () => {
       const error = new Error('ECONNREFUSED');
       axios.get.mockRejectedValue(error);
 
-      const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
       await expect(scrape.scrapeRentals('http://unavailable')).rejects.toThrow();
-      expect(errSpy).toHaveBeenCalled();
-
-      errSpy.mockRestore();
+      expect(consoleErrorSpy).toHaveBeenCalled();
     });
 
     it('logs and rethrows 404 errors', async () => {
       const error = new Error('404 Not Found');
       axios.get.mockRejectedValue(error);
 
-      const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
       await expect(scrape.scrapeRentals('http://notfound')).rejects.toThrow();
-
-      errSpy.mockRestore();
+      expect(consoleErrorSpy).toHaveBeenCalled();
     });
 
     it('logs and rethrows any unknown error', async () => {
       const error = new Error('Unknown error');
       axios.get.mockRejectedValue(error);
 
-      const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
       await expect(scrape.scrapeRentals('http://error')).rejects.toThrow();
-
-      errSpy.mockRestore();
+      expect(consoleErrorSpy).toHaveBeenCalled();
     });
 
     it('handles non-string HTML data', async () => {
@@ -480,12 +472,10 @@ describe('scrapeRentals', () => {
       `;
 
       axios.get.mockResolvedValue({ data: html });
-      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
       await scrape.scrapeRentals('http://example.com');
 
-      expect(logSpy).toHaveBeenCalled();
-      logSpy.mockRestore();
+      expect(consoleLogSpy).toHaveBeenCalled();
     });
   });
 });

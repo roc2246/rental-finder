@@ -2,6 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as controls from '../CRUD.js';
 import * as models from '../../models/index.js';
 
+// Prevent dotenv from printing its banner during tests
+vi.mock('dotenv', () => ({ default: { config: vi.fn() } }));
+
 // Mock the models module
 vi.mock('../../models/index.js');
 

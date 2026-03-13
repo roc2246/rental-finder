@@ -1,291 +1,122 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-// Mock modules before importing
-vi.mock('express', () => ({
-  default: vi.fn()
-}));
+async function loadServer({ port, dbError } = {}) {
+  vi.resetModules();
 
-vi.mock('dotenv', () => ({
-  default: {
-    config: vi.fn()
+  if (typeof port === "undefined") {
+    delete process.env.PORT;
+  } else {
+    process.env.PORT = String(port);
   }
-}));
 
-vi.mock('../models/db.js', () => ({
-  connectDB: vi.fn()
-}));
+  const app = {
+    use: vi.fn(),
+    get: vi.fn(),
+    listen: vi.fn((listenPort, cb) => {
+      cb?.();
+      return { close: vi.fn() };
+    }),
+  };
 
-vi.mock('../chron/index.js', () => ({
-  default: vi.fn()
-}));
+  const expressMock = vi.fn(() => app);
+  const jsonMiddleware = Symbol("jsonMiddleware");
+  const staticMiddleware = Symbol("staticMiddleware");
+  expressMock.json = vi.fn(() => jsonMiddleware);
+  expressMock.static = vi.fn(() => staticMiddleware);
 
-// Import after mocks
-import express from 'express';
-import { connectDB } from '../models/db.js';
-import initializeChron from '../chron/index.js';
+  const dotenvConfig = vi.fn();
+  const connectDB = dbError
+    ? vi.fn().mockRejectedValue(dbError)
+    : vi.fn().mockResolvedValue(undefined);
+  const initializeChron = vi.fn();
+  const apiRoutes = { mocked: true };
 
-describe('Server (index.js)', () => {
-  let mockApp;
-  let mockListen;
-  let consoleLogSpy;
-  let consoleErrorSpy;
-  let processExitSpy;
+  vi.doMock("express", () => ({ default: expressMock }));
+  vi.doMock("dotenv", () => ({ default: { config: dotenvConfig } }));
+  vi.doMock("../models/db.js", () => ({ connectDB }));
+  vi.doMock("../chron/index.js", () => ({ default: initializeChron }));
+  vi.doMock("../routes/index.js", () => ({ default: apiRoutes }));
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+  const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+  const exitSpy = vi.spyOn(process, "exit").mockImplementation(() => 0);
 
-    // Setup mock app
-    mockListen = vi.fn().mockImplementation((port, callback) => {
-      callback?.();
-    });
+  await import("../index.js");
+  await new Promise((resolve) => setTimeout(resolve, 0));
 
-    mockApp = {
-      use: vi.fn(),
-      get: vi.fn(),
-      listen: mockListen
-    };
+  return {
+    app,
+    expressMock,
+    jsonMiddleware,
+    staticMiddleware,
+    dotenvConfig,
+    connectDB,
+    initializeChron,
+    apiRoutes,
+    logSpy,
+    errorSpy,
+    exitSpy,
+  };
+}
 
-    express.mockReturnValue(mockApp);
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.resetModules();
+  delete process.env.PORT;
+});
 
-    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    processExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {});
+describe("server/index.js bootstrap", () => {
+  it("configures middleware, routes, and health endpoints", async () => {
+    const ctx = await loadServer();
 
-    connectDB.mockResolvedValue(undefined);
+    expect(ctx.dotenvConfig).toHaveBeenCalledTimes(1);
+    expect(ctx.expressMock).toHaveBeenCalledTimes(1);
+    expect(ctx.app.use).toHaveBeenCalledWith(ctx.jsonMiddleware);
+    expect(ctx.expressMock.static).toHaveBeenCalledTimes(1);
+    expect(ctx.app.use).toHaveBeenCalledWith("/mock-websites", ctx.staticMiddleware);
+    expect(ctx.app.use).toHaveBeenCalledWith("/api", ctx.apiRoutes);
+
+    const rootHandler = ctx.app.get.mock.calls.find((call) => call[0] === "/")?.[1];
+    const healthHandler = ctx.app.get.mock.calls.find((call) => call[0] === "/health")?.[1];
+    expect(typeof rootHandler).toBe("function");
+    expect(typeof healthHandler).toBe("function");
+
+    const rootRes = { send: vi.fn() };
+    rootHandler({}, rootRes);
+    expect(rootRes.send).toHaveBeenCalledWith("Rental Finder API");
+
+    const healthRes = { json: vi.fn() };
+    healthHandler({}, healthRes);
+    expect(healthRes.json).toHaveBeenCalledWith({ status: "ok" });
   });
 
-  afterEach(() => {
-    consoleLogSpy.mockRestore();
-    consoleErrorSpy.mockRestore();
-    processExitSpy.mockRestore();
+  it("starts in the expected order and defaults to port 3000", async () => {
+    const ctx = await loadServer();
+
+    expect(ctx.initializeChron).toHaveBeenCalledTimes(1);
+    expect(ctx.connectDB).toHaveBeenCalledTimes(1);
+    expect(ctx.app.listen).toHaveBeenCalledWith(3000, expect.any(Function));
+
+    expect(ctx.connectDB.mock.invocationCallOrder[0]).toBeLessThan(
+      ctx.app.listen.mock.invocationCallOrder[0],
+    );
+    expect(ctx.logSpy).toHaveBeenCalledWith("Server running on port 3000");
+    expect(ctx.exitSpy).not.toHaveBeenCalled();
   });
 
-  describe('Express App Initialization', () => {
-    it('creates express application', async () => {
-      expect(express).toBeDefined();
-      expect(mockApp).toBeDefined();
-    });
-
-    it('applies JSON middleware', async () => {
-      // This would be called during app initialization
-      // Note: Actual imports and middleware setup happen at module load time
-      expect(mockApp.use).toBeDefined();
-    });
-
-    it('registers GET / endpoint', async () => {
-      // Endpoint registration happens at import
-      expect(mockApp.get).toBeDefined();
-    });
-
-    it('registers /health endpoint', async () => {
-      // Health check endpoint is set up
-      expect(mockApp.get).toBeDefined();
-    });
+  it("uses PORT from environment when provided", async () => {
+    const ctx = await loadServer({ port: 5050 });
+    expect(ctx.app.listen).toHaveBeenCalledWith("5050", expect.any(Function));
+    expect(ctx.logSpy).toHaveBeenCalledWith("Server running on port 5050");
   });
 
-  describe('Health Check Endpoint', () => {
-    it('responds with status ok', async () => {
-      const callback = mockApp.get.mock.calls.find(call => call[0] === '/health')?.[1];
-      
-      if (callback) {
-        const req = {};
-        const res = { json: vi.fn() };
+  it("logs startup failures and exits with code 1", async () => {
+    const err = new Error("Database unavailable");
+    const ctx = await loadServer({ dbError: err });
 
-        callback(req, res);
-
-        expect(res.json).toHaveBeenCalledWith({ status: 'ok' });
-      }
-    });
-
-    it('returns proper JSON format for health check', async () => {
-      const callback = mockApp.get.mock.calls.find(call => call[0] === '/health')?.[1];
-      
-      if (callback) {
-        const req = {};
-        const res = { json: vi.fn() };
-
-        callback(req, res);
-
-        const callArgs = res.json.mock.calls[0]?.[0];
-        expect(callArgs).toHaveProperty('status');
-        expect(callArgs.status).toBe('ok');
-      }
-    });
-  });
-
-  describe('Root Endpoint', () => {
-    it('responds with API message', async () => {
-      const callback = mockApp.get.mock.calls.find(call => call[0] === '/')?.[1];
-      
-      if (callback) {
-        const req = {};
-        const res = { send: vi.fn() };
-
-        callback(req, res);
-
-        expect(res.send).toHaveBeenCalledWith('Rental Finder API');
-      }
-    });
-  });
-
-  describe('Server Startup', () => {
-    it('connects to database before starting', async () => {
-      expect(connectDB).toBeDefined();
-    });
-
-    it('initializes cron jobs', async () => {
-      expect(initializeChron).toBeDefined();
-    });
-
-    it('listens on configured port', async () => {
-      expect(mockListen).toBeDefined();
-    });
-
-    it('uses PORT environment variable if set', async () => {
-      const originalPort = process.env.PORT;
-      process.env.PORT = '5000';
-
-      // In a real scenario, this would need re-import
-      // This test documents the expected behavior
-
-      if (originalPort) {
-        process.env.PORT = originalPort;
-      } else {
-        delete process.env.PORT;
-      }
-    });
-
-    it('defaults to port 3000 if PORT not set', async () => {
-      delete process.env.PORT;
-      
-      // Default behavior is documented
-      expect(mockListen).toBeDefined();
-    });
-  });
-
-  describe('Error Handling', () => {
-    it('handles database connection errors', async () => {
-      const error = new Error('DB connection failed');
-      connectDB.mockRejectedValue(error);
-
-      // Actual error handling happens in the start() function
-      expect(connectDB).toBeDefined();
-    });
-
-    it('logs startup errors to console', async () => {
-      const error = new Error('Startup failed');
-      connectDB.mockRejectedValue(error);
-
-      // Error logging would occur in catch block
-      expect(consoleErrorSpy).toBeDefined();
-    });
-
-    it('exits process on startup failure', async () => {
-      const error = new Error('Critical error');
-      connectDB.mockRejectedValue(error);
-
-      // Process would exit with code 1
-      expect(processExitSpy).toBeDefined();
-    });
-  });
-
-  describe('Configuration', () => {
-    it('loads environment variables from .env', async () => {
-      // dotenv.config should be called at module load
-      // This test documents that configuration is loaded
-      expect(process.env).toBeDefined();
-    });
-
-    it('resolves config path correctly', async () => {
-      // Config path resolution uses path and fileURLToPath
-      // This verifies the app can load config from correct directory
-      expect(express).toBeDefined();
-    });
-  });
-
-  describe('Middleware Registration', () => {
-    it('registers JSON parser middleware', async () => {
-      // express.json() middleware should be registered
-      expect(mockApp.use).toBeDefined();
-    });
-
-    it('middleware is registered before routes', async () => {
-      // Middleware setup happens before route handlers
-      expect(mockApp.use).toBeDefined();
-      expect(mockApp.get).toBeDefined();
-    });
-  });
-
-  describe('Route Registration', () => {
-    it('registers root route handler', async () => {
-      const rootCalls = mockApp.get.mock.calls.filter(call => call[0] === '/');
-      expect(rootCalls.length).toBeGreaterThanOrEqual(0);
-    });
-
-    it('registers health route handler', async () => {
-      const healthCalls = mockApp.get.mock.calls.filter(call => call[0] === '/health');
-      expect(healthCalls.length).toBeGreaterThanOrEqual(0);
-    });
-
-    it('route handlers are functions', async () => {
-      const handlers = mockApp.get.mock.calls;
-      handlers.forEach(call => {
-        if (call[0] && typeof call[0] === 'string') {
-          expect(typeof call[1]).toBe('function');
-        }
-      });
-    });
-  });
-
-  describe('Startup Sequence', () => {
-    it('initializes cron before starting server', async () => {
-      expect(initializeChron).toBeDefined();
-    });
-
-    it('connects to database before listening', async () => {
-      expect(connectDB).toBeDefined();
-    });
-
-    it('all initialization steps complete successfully', async () => {
-      expect(express).toBeDefined();
-      expect(connectDB).toBeDefined();
-      expect(initializeChron).toBeDefined();
-    });
-  });
-
-  describe('Message Logging', () => {
-    it('logs server startup message', async () => {
-      // "Server running on port X" should be logged
-      expect(consoleLogSpy).toBeDefined();
-    });
-
-    it('logs database connection message if successful', async () => {
-      connectDB.mockResolvedValue(undefined);
-
-      // DB connection message would be logged
-      expect(consoleLogSpy).toBeDefined();
-    });
-
-    it('logs errors on startup failure', async () => {
-      // Error messages would be logged to console
-      expect(consoleErrorSpy).toBeDefined();
-    });
-  });
-
-  describe('Server Instance Management', () => {
-    it('creates a single express instance', async () => {
-      expect(express).toBeDefined();
-      expect(typeof express).toBe('function');
-    });
-
-    it('configures the app once', async () => {
-      // App is configured through use() and get() calls
-      expect(mockApp).toBeDefined();
-    });
-
-    it('listens on one port', async () => {
-      // Server should listen on exactly one port
-      expect(mockListen).toBeDefined();
-    });
+    expect(ctx.connectDB).toHaveBeenCalledTimes(1);
+    expect(ctx.app.listen).not.toHaveBeenCalled();
+    expect(ctx.errorSpy).toHaveBeenCalledWith("Failed to start server:", err);
+    expect(ctx.exitSpy).toHaveBeenCalledWith(1);
   });
 });
