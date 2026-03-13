@@ -120,7 +120,7 @@ export async function getRentals(
   filters = {},
   page = 1,
   pageSize = 20,
-  sort = { dailyRate: 1 },
+  sort = { price: 1 },
 ) {
   try {
     // Calculate how many documents to skip
