@@ -27,6 +27,12 @@ app.get("/", (req, res) => res.send("Rental Finder API"));
  */
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 
+// Serve mock listing pages used by listingURL links.
+app.use(
+  "/mock-websites",
+  express.static(path.resolve(__dirname, "../mock-websites")),
+);
+
 // Initialize scheduled/cron tasks (e.g., periodic scraping)
 initializeChron();
 

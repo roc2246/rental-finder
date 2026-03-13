@@ -24,7 +24,7 @@ export default function initializeChron() {
 
       // Annotate and flatten without nested for-loops
       const allRentals = scrapedArrays.flatMap((rentals, i) =>
-        rentals.map((r) => ({ ...r, listingURL: `${urls[i]}#${r.title}` })),
+        rentals.map((r) => ({ ...r, listingURL: `mock-websites/${urls[i]}#${r.title}` })),
       );
 
       console.log("Scraped rentals total:", allRentals.length);
