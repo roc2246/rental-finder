@@ -15,4 +15,10 @@ export default defineConfig({
           : "backend url", // your backend URL
     },
   },
+  test: {
+    globals: true,
+    environment: "happy-dom",
+    setupFiles: "./src/test-setup.js",
+    clearMocks: true,
+  },
 })
