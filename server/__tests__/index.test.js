@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-async function loadServer({ port, dbError } = {}) {
+async function loadServer({ port, dbError, hasClientBuild = true } = {}) {
   vi.resetModules();
 
   if (typeof port === "undefined") {
@@ -23,6 +23,7 @@ async function loadServer({ port, dbError } = {}) {
   const staticMiddleware = Symbol("staticMiddleware");
   expressMock.json = vi.fn(() => jsonMiddleware);
   expressMock.static = vi.fn(() => staticMiddleware);
+  const existsSync = vi.fn().mockReturnValue(hasClientBuild);
 
   const dotenvConfig = vi.fn();
   const connectDB = dbError
@@ -32,6 +33,7 @@ async function loadServer({ port, dbError } = {}) {
   const apiRoutes = { mocked: true };
 
   vi.doMock("express", () => ({ default: expressMock }));
+  vi.doMock("fs", () => ({ default: { existsSync }, existsSync }));
   vi.doMock("dotenv", () => ({ default: { config: dotenvConfig } }));
   vi.doMock("../models/db.js", () => ({ connectDB }));
   vi.doMock("../chron/index.js", () => ({ default: initializeChron }));
@@ -49,6 +51,7 @@ async function loadServer({ port, dbError } = {}) {
     expressMock,
     jsonMiddleware,
     staticMiddleware,
+    existsSync,
     dotenvConfig,
     connectDB,
     initializeChron,
@@ -66,18 +69,28 @@ afterEach(() => {
 });
 
 describe("server/index.js bootstrap", () => {
-  it("configures middleware, routes, and health endpoint", async () => {
+  it("configures middleware, routes, and monitoring endpoints", async () => {
     const ctx = await loadServer();
 
     expect(ctx.dotenvConfig).toHaveBeenCalledTimes(1);
     expect(ctx.expressMock).toHaveBeenCalledTimes(1);
     expect(ctx.app.use).toHaveBeenCalledWith(ctx.jsonMiddleware);
-    expect(ctx.expressMock.static).toHaveBeenCalledTimes(1);
+    expect(ctx.existsSync).toHaveBeenCalledTimes(1);
+    expect(ctx.expressMock.static).toHaveBeenCalledTimes(2);
     expect(ctx.app.use).toHaveBeenCalledWith("/mock-websites", ctx.staticMiddleware);
+    expect(ctx.app.use).toHaveBeenCalledWith(ctx.staticMiddleware);
     expect(ctx.app.use).toHaveBeenCalledWith("/api", ctx.apiRoutes);
 
+    const rootHandler = ctx.app.get.mock.calls.find(
+      (call) => call[0] instanceof RegExp,
+    )?.[1];
     const healthHandler = ctx.app.get.mock.calls.find((call) => call[0] === "/health")?.[1];
+    expect(typeof rootHandler).toBe("function");
     expect(typeof healthHandler).toBe("function");
+
+    const rootRes = { sendFile: vi.fn() };
+    rootHandler({}, rootRes);
+    expect(rootRes.sendFile).toHaveBeenCalledTimes(1);
 
     const healthRes = { json: vi.fn() };
     healthHandler({}, healthRes);
@@ -102,6 +115,21 @@ describe("server/index.js bootstrap", () => {
     const ctx = await loadServer({ port: 5050 });
     expect(ctx.app.listen).toHaveBeenCalledWith("5050", expect.any(Function));
     expect(ctx.logSpy).toHaveBeenCalledWith("Server running on port 5050");
+  });
+
+  it("uses API root response when frontend build is not present", async () => {
+    const ctx = await loadServer({ hasClientBuild: false });
+
+    const rootHandler = ctx.app.get.mock.calls.find((call) => call[0] === "/")?.[1];
+    expect(typeof rootHandler).toBe("function");
+
+    const rootRes = { json: vi.fn() };
+    rootHandler({}, rootRes);
+
+    expect(rootRes.json).toHaveBeenCalledWith({
+      name: "Rental Finder API",
+      health: "/health",
+    });
   });
 
   it("logs startup failures and exits with code 1", async () => {

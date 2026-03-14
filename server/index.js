@@ -4,6 +4,7 @@
 
 import express from "express";
 import dotenv from "dotenv";
+import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { connectDB } from "./models/db.js";
@@ -11,11 +12,14 @@ import initializeChron from "./chron/index.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, './config/.env') });
+const clientDistPath = path.resolve(__dirname, "../client/dist");
+const clientIndexPath = path.resolve(clientDistPath, "index.html");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+
 
 /**
  * Status endpoint for monitoring
@@ -38,6 +42,19 @@ initializeChron();
 // mount our API routes under /api so the frontend proxy can forward correctly
 import apiRoutes from "./routes/index.js";
 app.use("/api", apiRoutes);
+
+if (fs.existsSync(clientIndexPath)) {
+  // Serve the built React frontend when deployed as a single app.
+  app.use(express.static(clientDistPath));
+  app.get(/^\/(?!api|health|mock-websites).*/, (req, res) => {
+    res.sendFile(clientIndexPath);
+  });
+} else {
+  // Helpful fallback for environments that only run the API service.
+  app.get("/", (req, res) => {
+    res.json({ name: "Rental Finder API", health: "/health" });
+  });
+}
 
 /**
  * Starts the Express server and establishes database connection
