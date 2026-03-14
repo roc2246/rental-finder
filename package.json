@@ -5,6 +5,8 @@
     "server"
   ],
   "scripts": {
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "build:client": "npm --prefix client install && npm --prefix client run build",
+    "heroku-postbuild": "npm run build:client"
   }
 }
