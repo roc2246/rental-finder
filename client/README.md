@@ -1,16 +1,88 @@
-# React + Vite
+# Rental Finder — Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React single‑page application (Vite) that consumes the Rental Finder
+API and presents listings with filtering, sorting, and pagination.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🛠 Tech Stack
 
-## React Compiler
+| Layer | Library |
+|---|---|
+| UI | React 19 |
+| Build | Vite 7 |
+| Testing | Vitest 4 + React Testing Library + happy-dom |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 📦 Installation
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+```
+
+---
+
+## ▶️ Development
+
+```bash
+npm run dev      # Vite dev server → http://localhost:5173
+npm run build    # production build
+npm run preview  # preview the production build locally
+npm run lint     # ESLint
+```
+
+The dev server proxies `/api` requests to `http://localhost:3000` (the
+Express backend).
+
+---
+
+## ✅ Testing
+
+```bash
+npm test            # single run (vitest run)
+npm run test:watch  # watch mode (vitest)
+```
+
+**100 tests** across 8 test files:
+
+| Test file | What's covered |
+|---|---|
+| `src/__tests__/App.test.jsx` | Initial fetch, filter/sort/page state, pagination visibility, API error handling |
+| `src/sections/__tests__/Filters.test.jsx` | Controlled inputs, label rendering, handler delegation |
+| `src/sections/__tests__/ListingsGrid.test.jsx` | Empty state, card rendering, fallback values, link hrefs, `rel` safety |
+| `src/sections/__tests__/Pagination.test.jsx` | Prev/Next disabled states, page indicator, `onPageChange` calls |
+| `src/components/__tests__/Filter.test.jsx` | Option list, controlled value, `setSortBy` interactions |
+| `src/components/__tests__/NavBtn.test.jsx` | Label, disabled/enabled state, click handling |
+| `src/js/__tests__/fetch-library.test.js` | HTTP method, URL, response parsing, error propagation |
+| `src/js/__tests__/utils-library.test.js` | `appendParams` types/null/JSON; `getListingHref` all URL variants |
+
+Test files live alongside the code they cover in co-located
+`__tests__/` directories. The Vitest config is in
+[`vite.config.js`](vite.config.js) and the jest-dom setup is in
+[`src/test-setup.js`](src/test-setup.js).
+
+---
+
+## 🗂 Directory Layout
+
+```
+src/
+├── __tests__/        # App integration tests
+├── components/
+│   ├── Filter.jsx
+│   ├── NavBtn.jsx
+│   └── __tests__/
+├── js/
+│   ├── fetch-library.js
+│   ├── utils-library.js
+│   └── __tests__/
+├── sections/
+│   ├── Filters.jsx
+│   ├── ListingsGrid.jsx
+│   ├── Pagination.jsx
+│   └── __tests__/
+├── App.jsx
+├── main.jsx
+└── test-setup.js     # @testing-library/jest-dom import
+```

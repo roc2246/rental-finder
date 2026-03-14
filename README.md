@@ -29,6 +29,8 @@ used by the scraper during testing.
 * Batch utilities and cron scheduling for automated data refresh
 * Fully tested server components (430+ tests) using Vitest and
   mongodb-memory-server
+* Fully tested client components (100 tests) using Vitest and React
+  Testing Library
 
 ---
 
@@ -39,9 +41,13 @@ used by the scraper during testing.
 ├── client/              # React/Vite front end
 │   ├── public/          # Static assets
 │   └── src/             # React components, helpers, styles
+│       ├── __tests__/   # App integration tests
 │       ├── js/          # `fetch-library`, `utils-library`
+│       │   └── __tests__/
 │       ├── sections/    # Filters, ListingsGrid, Pagination
+│       │   └── __tests__/
 │       └── components/  # Reusable UI bits (NavBtn, etc.)
+│           └── __tests__/
 ├── mock-websites/       # Sample HTML for scraping tests
 └── server/              # API backend
     ├── chron/           # Scheduled/cron jobs
@@ -139,24 +145,43 @@ communicate with the server endpoint to retrieve rental data.
 
 ## ✅ Testing
 
+### Server
+
 The server contains a comprehensive test suite managed by Vitest.  To
 execute:
 
 ```bash
 cd server
-npm test          # run all tests
+npm test                                             # run all tests
 npm test -- --watch
-npm test -- server/models/__tests__/CRUD.test.js
-
-# coverage report
-npm test -- --coverage
+npm test -- server/models/__tests__/CRUD.test.js     # single file
+npm test -- --coverage                               # coverage report
 ```
 
 Tests cover models, controllers, utilities, and the entry point.  Many
 mocked HTML pages under `mock-websites/` support scraper tests.
 
-The client project currently does not include automated tests and
-relies on manual QA using Vite's dev server.
+### Client
+
+The client contains 100 unit and integration tests covering every
+component, section, and utility module.  To execute:
+
+```bash
+cd client
+npm test            # single run
+npm run test:watch  # re-run on file changes
+```
+
+| Test file | What's covered |
+|---|---|
+| `src/__tests__/App.test.jsx` | Initial fetch, filter/sort/page state, pagination visibility, API error handling |
+| `src/sections/__tests__/Filters.test.jsx` | Controlled inputs, label rendering, handler delegation |
+| `src/sections/__tests__/ListingsGrid.test.jsx` | Empty state, card rendering, fallback values, link hrefs, `rel` safety |
+| `src/sections/__tests__/Pagination.test.jsx` | Prev/Next disabled states, page indicator, `onPageChange` calls |
+| `src/components/__tests__/Filter.test.jsx` | Option list, controlled value, `setSortBy` interactions |
+| `src/components/__tests__/NavBtn.test.jsx` | Label, disabled/enabled state, click handling |
+| `src/js/__tests__/fetch-library.test.js` | HTTP method, URL, response parsing, error propagation |
+| `src/js/__tests__/utils-library.test.js` | `appendParams` types/null/JSON; `getListingHref` all URL variants |
 
 ---
 
@@ -173,10 +198,12 @@ relies on manual QA using Vite's dev server.
    * Modify filters, grid, or pagination under `client/src/sections`.
    * Use `fetch-library.js` and `utils-library.js` to call the backend.
    * Add new UI components to `client/src/components`.
-   * Run `npm run lint` and review behavior in the browser.
+   * Add or update tests in the co-located `__tests__/` folder.
+   * Run `npm test` to verify everything passes, then `npm run lint`.
 
 3. Commit, push, and open pull requests. Code review should include
-   verifying tests pass and manual smoke testing of the UI.
+   verifying **both** the client and server test suites pass and manual
+   smoke testing of the UI.
 
 ---
 
