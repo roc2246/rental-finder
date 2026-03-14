@@ -19,7 +19,10 @@ dotenv.config({ path: path.resolve(__dirname, '../config/.env') });
  */
 export async function connectDB() {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    const mongoUri = process.env.MONGO_URI;
+    const databaseName = process.env.MONGO_DB_NAME || 'rental-finder';
+
+    await mongoose.connect(mongoUri, { dbName: databaseName });
     console.log('MongoDB connected successfully!');
   } catch (err) {
     console.error('MongoDB connection error:', err);

@@ -55,13 +55,52 @@ describe('Database Connection (db.js)', () => {
 
       await db.connectDB();
 
-      expect(mongoose.connect).toHaveBeenCalledWith('mongodb://test:27017/test');
+      expect(mongoose.connect).toHaveBeenCalledWith('mongodb://test:27017/test', {
+        dbName: 'rental-finder'
+      });
 
       // Restore
       if (originalUri) {
         process.env.MONGO_URI = originalUri;
       } else {
         delete process.env.MONGO_URI;
+      }
+    });
+
+    it('defaults to the rental-finder database name', async () => {
+      mongoose.connect.mockResolvedValue({});
+      const originalDbName = process.env.MONGO_DB_NAME;
+
+      delete process.env.MONGO_DB_NAME;
+
+      await db.connectDB();
+
+      expect(mongoose.connect).toHaveBeenCalledWith(process.env.MONGO_URI, {
+        dbName: 'rental-finder'
+      });
+
+      if (originalDbName) {
+        process.env.MONGO_DB_NAME = originalDbName;
+      } else {
+        delete process.env.MONGO_DB_NAME;
+      }
+    });
+
+    it('uses MONGO_DB_NAME when provided', async () => {
+      mongoose.connect.mockResolvedValue({});
+      const originalDbName = process.env.MONGO_DB_NAME;
+      process.env.MONGO_DB_NAME = 'custom-db';
+
+      await db.connectDB();
+
+      expect(mongoose.connect).toHaveBeenCalledWith(process.env.MONGO_URI, {
+        dbName: 'custom-db'
+      });
+
+      if (originalDbName) {
+        process.env.MONGO_DB_NAME = originalDbName;
+      } else {
+        delete process.env.MONGO_DB_NAME;
       }
     });
 
@@ -237,7 +276,9 @@ describe('Database Connection (db.js)', () => {
 
       await db.connectDB();
 
-      expect(mongoose.connect).toHaveBeenCalledWith(customUri);
+      expect(mongoose.connect).toHaveBeenCalledWith(customUri, {
+        dbName: 'rental-finder'
+      });
 
       // Restore
       if (original) {
