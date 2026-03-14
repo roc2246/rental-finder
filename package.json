@@ -1,0 +1,10 @@
+{
+  "name": "rental-finder-monorepo",
+  "private": true,
+  "workspaces": [
+    "server"
+  ],
+  "scripts": {
+    "start": "node server/index.js"
+  }
+}
