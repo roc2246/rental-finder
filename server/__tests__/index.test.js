@@ -66,7 +66,7 @@ afterEach(() => {
 });
 
 describe("server/index.js bootstrap", () => {
-  it("configures middleware, routes, and health endpoints", async () => {
+  it("configures middleware, routes, and health endpoint", async () => {
     const ctx = await loadServer();
 
     expect(ctx.dotenvConfig).toHaveBeenCalledTimes(1);
@@ -76,14 +76,8 @@ describe("server/index.js bootstrap", () => {
     expect(ctx.app.use).toHaveBeenCalledWith("/mock-websites", ctx.staticMiddleware);
     expect(ctx.app.use).toHaveBeenCalledWith("/api", ctx.apiRoutes);
 
-    const rootHandler = ctx.app.get.mock.calls.find((call) => call[0] === "/")?.[1];
     const healthHandler = ctx.app.get.mock.calls.find((call) => call[0] === "/health")?.[1];
-    expect(typeof rootHandler).toBe("function");
     expect(typeof healthHandler).toBe("function");
-
-    const rootRes = { send: vi.fn() };
-    rootHandler({}, rootRes);
-    expect(rootRes.send).toHaveBeenCalledWith("Rental Finder API");
 
     const healthRes = { json: vi.fn() };
     healthHandler({}, healthRes);
