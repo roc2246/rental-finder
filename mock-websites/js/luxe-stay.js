@@ -200,6 +200,8 @@ function renderListings() {
     listings.forEach(listing => {
         const listingEl = document.createElement('div');
         listingEl.className = 'listing-card rental-listing';
+         // listingEl.id = listing.title ? listing.title.replace(/\s+/g, '-').toLowerCase() : `listing-${listing.id}`;
+        listingEl.id = listing.title
         listingEl.innerHTML = `
             <div class="listing-image ${listing.imageClass}">
                 <div class="rating-badge"><span class="star">★</span> ${listing.rating} (${listing.reviews})</div>

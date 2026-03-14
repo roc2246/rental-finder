@@ -193,6 +193,8 @@ function renderListings() {
     listings.forEach(listing => {
         const listingEl = document.createElement('div');
         listingEl.className = 'listing rental-listing';
+        // listingEl.id = listing.title ? listing.title.replace(/\s+/g, '-').toLowerCase() : `listing-${listing.id}`;
+        listingEl.id = listing.title
         listingEl.innerHTML = `
             <div class="listing-image">${listing.image || 'Property Image'}</div>
             <div class="listing-info">

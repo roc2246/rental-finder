@@ -164,7 +164,8 @@ function renderListings() {
     listings.forEach(listing => {
         const listingDiv = document.createElement('div');
         listingDiv.className = 'list-listing rental-listing';
-
+ // listingDiv.id = listing.title ? listing.title.replace(/\s+/g, '-').toLowerCase() : `listing-${listing.id}`;
+        listingDiv.id = listing.title
         listingDiv.innerHTML = `
             <div class="list-image ${listing.imageClass}">
                 <div class="price-tag rental-price">$${listing.price.toLocaleString()}</div>
