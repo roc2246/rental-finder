@@ -27,6 +27,10 @@ app.get("/", (req, res) => res.send("Rental Finder API"));
  */
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 
+// Browsers request /favicon.ico by default. Return 204 to avoid noisy 404s
+// when the API is accessed directly without a UI favicon asset.
+app.get("/favicon.ico", (req, res) => res.status(204).end());
+
 // Serve mock listing pages used by listingURL links.
 app.use(
   "/mock-websites",
