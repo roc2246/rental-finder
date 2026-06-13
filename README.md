@@ -209,9 +209,9 @@ npm run test:watch  # re-run on file changes
 
 ## 📄 Additional Documentation
 
-* **Server docs** – see `server/SERVER.md` for in‑depth server
+* **Server docs** – see `server/SERVER.md for in‑depth server
   architecture and API details.
-* **Testing notes** – `server/TESTING-GUIDE.md` summarizes the test
+* **Testing notes** – `server/TESTING-GUIDE.md summarizes the test
   coverage.
 * **Server configuration** – environment variables and how the cron
   scheduler works.
