@@ -37,7 +37,7 @@ Review selected backend files (controllers, routes, models) or the full API arch
 - JWT implementation and Middleware usage
 - Role-Based Access Control (RBAC)
 - Mongoose schema design and data integrity
-- UTC Date handling and scheduling logic
+- UTC Date handling and booking/availability logic
 - RESTful API standards (Status codes, HTTP methods)
 - Separation of concerns
 - Controller/Service/Route organization

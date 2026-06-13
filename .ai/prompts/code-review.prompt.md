@@ -37,7 +37,7 @@ Review any provided JavaScript, React components, SCSS, Express routes, or Mongo
 - Architecture
 - Security
 - Input validation and sanitization
-- Scheduling logic (UTC date handling, RBAC)
+- Booking and availability logic (UTC date handling, RBAC)
 - Accessibility
 - MERN stack best practices
 - Reusability
