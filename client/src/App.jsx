@@ -14,51 +14,54 @@ function App() {
   // data returned from server
   const [listings, setListings] = React.useState([]);
   const [totalPages, setTotalPages] = React.useState(1);
+  const [isLoading, setIsLoading] = React.useState(false);
 
-  // load data whenever filters/page/sort change
+  // Reset page to 1 when filters change, but handle it carefully to avoid double-fetching
+  const handleFilterChange = (setter) => (value) => {
+    setter(value);
+    setPage(1);
+  };
+
   React.useEffect(() => {
     async function loadData() {
+      setIsLoading(true);
       try {
-        const filters = {};
-        if (locationQuery.trim()) {
-          filters.location = { $regex: locationQuery.trim(), $options: "i" };
-        }
+        const filters = locationQuery.trim() 
+          ? { location: locationQuery.trim() } 
+          : {};
 
-        const sort = {};
-        if (sortBy) {
-          sort[sortBy] = 1; // ascending
-        }
-
+        const sort = { [sortBy]: 1 };
         const data = await fetchLib.fetchListings(filters, page, 20, sort);
+        
         setListings(data.results || []);
         setTotalPages(data.totalPages || 1);
       } catch (err) {
         console.error("failed to load listings", err);
         setListings([]);
-        setTotalPages(1);
+      } finally {
+        setIsLoading(false);
       }
     }
 
     loadData();
   }, [sortBy, page, locationQuery]);
 
-  // reset to first page when user changes filters or sort
-  React.useEffect(() => {
-    setPage(1);
-  }, [sortBy, locationQuery]);
-
   return (
     <div className="app-container">
       {/* Filters (zip code, sort by) */}
       <Filters
         sortBy={sortBy}
-        setSortBy={setSortBy}
+        setSortBy={handleFilterChange(setSortBy)}
         locationQuery={locationQuery}
-        setLocationQuery={setLocationQuery}
+        setLocationQuery={handleFilterChange(setLocationQuery)}
       />
 
       {/* Listings grid */}
-      <ListingsGrid listings={listings} />
+      {isLoading ? (
+        <div className="loading-spinner">Loading properties...</div>
+      ) : (
+        <ListingsGrid listings={listings} />
+      )}
 
       {/* simple pagination controls */}
       {totalPages > 1 && (

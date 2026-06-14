@@ -57,6 +57,16 @@ if (fs.existsSync(clientIndexPath)) {
 }
 
 /**
+ * Global error handling middleware
+ */
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.status || 500).json({
+    error: err.message || "Internal Server Error",
+  });
+});
+
+/**
  * Starts the Express server and establishes database connection
  * @async
  * @throws {Error} - Logs error and exits process if startup fails

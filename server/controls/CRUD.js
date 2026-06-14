@@ -22,8 +22,16 @@ export async function manageRentalRetrieval(req, res) {
     const rawFilters = req.query.filters;
     const rawSort = req.query.sort;
 
+    const filters = utils.parseJsonOrValue(rawFilters, {});
+
+    // Move regex logic here for security and to keep database implementation 
+    // details off the client. Only apply regex if location is a string.
+    if (filters.location && typeof filters.location === "string") {
+      filters.location = { $regex: filters.location, $options: "i" };
+    }
+
     const args = {
-      filters: utils.parseJsonOrValue(rawFilters, {}),
+      filters,
       page: parseInt(req.query.page) || 1,
       pagesize: parseInt(req.query.pageSize || req.query.pagesize) || 20,
       sort: utils.parseJsonOrValue(rawSort, { dailyRate: 1 }),
