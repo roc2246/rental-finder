@@ -14,7 +14,7 @@ Before reviewing the code, use the standards and requirements defined in:
 
 ## Context
 
-This project is a full-stack MERN application for managing ski lesson bookings and user roles.
+This project is a full-stack MERN application for the Rental Finder - a property rental listing and booking platform.
 
 Review the provided API controllers, routes, or service modules.
 
