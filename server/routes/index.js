@@ -1,13 +1,19 @@
 import express from "express";
 import * as controls from "../controls/index.js";
 import {
+  requestLogger,
   validateRentalQuery,
+  validateRentalBody,
   authenticateToken,
+  authorize,
   validateObjectId,
 } from "../middleware/index.js";
 
 // use a router so that the main server file can mount it under a prefix
 const router = express.Router();
+
+// Apply logging to all routes
+router.use(requestLogger);
 
 // ===== READ Operations (Public) =====
 
@@ -21,13 +27,32 @@ router.get("/rentals/:id", validateObjectId, controls.getRental);
 
 // ===== WRITE Operations (Protected) =====
 
-// Create new rental - requires authentication
-router.post("/rentals", authenticateToken, controls.createRental);
+// Create new rental - requires authentication and admin/agent role
+router.post(
+  "/rentals",
+  authenticateToken,
+  authorize(['admin', 'agent']),
+  validateRentalBody,
+  controls.createRental
+);
 
-// Update rental - requires authentication
-router.put("/rentals/:id", authenticateToken, validateObjectId, controls.updateRental);
+// Update rental - requires authentication and admin/agent role
+router.put(
+  "/rentals/:id",
+  authenticateToken,
+  authorize(['admin', 'agent']),
+  validateObjectId,
+  validateRentalBody,
+  controls.updateRental
+);
 
-// Delete rental - requires authentication
-router.delete("/rentals/:id", authenticateToken, validateObjectId, controls.deleteRental);
+// Delete rental - requires authentication and admin role only
+router.delete(
+  "/rentals/:id",
+  authenticateToken,
+  authorize(['admin']),
+  validateObjectId,
+  controls.deleteRental
+);
 
 export default router;

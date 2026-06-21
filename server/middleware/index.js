@@ -1,6 +1,135 @@
 import jwt from "jsonwebtoken";
 
 /**
+ * Logs incoming requests and response details
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {void}
+ */
+export function requestLogger(req, res, next) {
+  const start = Date.now();
+  const userId = req.user?._id || 'anonymous';
+  const userRole = req.user?.role || 'none';
+
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(
+      `[${new Date().toISOString()}] ${req.method} ${req.path} - ${res.statusCode} (${duration}ms) [user: ${userId}, role: ${userRole}]`
+    );
+  });
+
+  next();
+}
+
+/**
+ * Validates rental request body for POST/PUT operations
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {void}
+ */
+export function validateRentalBody(req, res, next) {
+  const errors = [];
+  const { title, location, price, dailyRate, listingURL, bedrooms, description } = req.body;
+
+  // Validate title
+  if (title !== undefined) {
+    if (typeof title !== 'string' || title.trim().length < 3) {
+      errors.push("title must be a string with at least 3 characters");
+    }
+  }
+
+  // Validate location
+  if (location !== undefined) {
+    if (typeof location !== 'string' || location.trim().length === 0) {
+      errors.push("location must be a non-empty string");
+    }
+  }
+
+  // Validate listingURL
+  if (listingURL !== undefined) {
+    if (typeof listingURL !== 'string' || listingURL.trim().length === 0) {
+      errors.push("listingURL must be a non-empty string");
+    }
+  }
+
+  // Validate price
+  if (price !== undefined) {
+    if (typeof price !== 'string' || price.trim().length === 0) {
+      errors.push("price must be a non-empty string");
+    }
+  }
+
+  // Validate dailyRate
+  if (dailyRate !== undefined) {
+    if (typeof dailyRate !== 'number' || dailyRate < 0) {
+      errors.push("dailyRate must be a non-negative number");
+    }
+  }
+
+  // Validate bedrooms
+  if (bedrooms !== undefined) {
+    if (typeof bedrooms !== 'number' || bedrooms < 0) {
+      errors.push("bedrooms must be a non-negative number");
+    }
+  }
+
+  // Validate description
+  if (description !== undefined) {
+    if (typeof description !== 'string' || description.length > 1000) {
+      errors.push("description must be a string with max 1000 characters");
+    }
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({
+      error: "Bad Request",
+      message: "Validation failed",
+      details: errors
+    });
+  }
+
+  next();
+}
+
+/**
+ * Authorization middleware - checks if user has required role
+ * @param {string[]} allowedRoles - Array of roles allowed to access endpoint
+ * @returns {Function} - Middleware function
+ * @example
+ * router.delete('/rentals/:id', authenticateToken, authorize(['admin']), deleteRental);
+ */
+export function authorize(allowedRoles = []) {
+  return (req, res, next) => {
+    const user = req.user;
+
+    if (!user) {
+      return res.status(401).json({
+        error: "Unauthorized",
+        message: "No user authenticated"
+      });
+    }
+
+    // If no roles required, allow all authenticated users
+    if (allowedRoles.length === 0) {
+      return next();
+    }
+
+    // Check if user's role is in allowed roles
+    if (!allowedRoles.includes(user.role)) {
+      console.warn(`[AUTH] User ${user._id} (${user.role}) attempted unauthorized action: ${req.method} ${req.path}`);
+      return res.status(403).json({
+        error: "Forbidden",
+        message: `This action requires one of these roles: ${allowedRoles.join(", ")}`
+      });
+    }
+
+    next();
+  };
+}
+
+/**
  * Validates rental query parameters (page, pageSize, filters)
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object

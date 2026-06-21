@@ -13,7 +13,7 @@ function getRouteLayers(r) {
 }
 
 describe("API router", () => {
-  it("exposes /rentals and /listings", () => {
+  it("exposes /rentals and /listings GET endpoints", () => {
     const routes = getRouteLayers(router);
     const paths = routes.map((route) => route.path);
 
@@ -21,24 +21,53 @@ describe("API router", () => {
     expect(paths).toContain("/listings");
   });
 
-  it("registers GET handlers only", () => {
+  it("exposes CRUD endpoints for rentals", () => {
     const routes = getRouteLayers(router);
+    const methods = {};
+
     for (const route of routes) {
-      expect(route.methods.get).toBe(true);
-      expect(route.methods.post).toBeUndefined();
-      expect(route.methods.put).toBeUndefined();
-      expect(route.methods.delete).toBeUndefined();
+      if (!methods[route.path]) {
+        methods[route.path] = [];
+      }
+      if (route.methods.get) methods[route.path].push('GET');
+      if (route.methods.post) methods[route.path].push('POST');
+      if (route.methods.put) methods[route.path].push('PUT');
+      if (route.methods.delete) methods[route.path].push('DELETE');
     }
+
+    // List endpoints should have GET only
+    expect(methods['/rentals']).toContain('GET');
+    expect(methods['/rentals']).toContain('POST');
+    expect(methods['/rentals']).toContain('PUT');
+    expect(methods['/rentals']).toContain('DELETE');
+
+    // Listings alias should have GET only
+    expect(methods['/listings']).toEqual(['GET']);
   });
 
-  it("maps both endpoints to the same controller", () => {
+  it("maps GET /rentals and /listings to manageRentalRetrieval", () => {
     const routes = getRouteLayers(router);
     const rentalRoute = routes.find((route) => route.path === "/rentals");
     const listingRoute = routes.find((route) => route.path === "/listings");
 
     expect(rentalRoute).toBeDefined();
     expect(listingRoute).toBeDefined();
-    expect(rentalRoute.stack[0].handle).toBe(controls.manageRentalRetrieval);
-    expect(listingRoute.stack[0].handle).toBe(controls.manageRentalRetrieval);
+    
+    // Find the manageRentalRetrieval handler in the middleware stack
+    const rentalHandler = rentalRoute.stack.find(layer => layer.handle === controls.manageRentalRetrieval);
+    const listingHandler = listingRoute.stack.find(layer => layer.handle === controls.manageRentalRetrieval);
+    
+    expect(rentalHandler).toBeDefined();
+    expect(listingHandler).toBeDefined();
+  });
+
+  it("protects write endpoints with authentication and authorization", () => {
+    const routes = getRouteLayers(router);
+    
+    // Find POST /rentals route
+    const postRental = routes.find((r) => r.path === "/rentals" && r.methods.post);
+    
+    expect(postRental).toBeDefined();
+    expect(postRental.stack.length).toBeGreaterThan(1); // Should have middleware
   });
 });

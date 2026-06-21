@@ -10,6 +10,7 @@ import { fileURLToPath } from "url";
 import cors from "cors";
 import { connectDB } from "./models/db.js";
 import initializeChron from "./chron/index.js";
+import { requestLogger } from "./middleware/index.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, './config/.env') });
@@ -30,6 +31,9 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
+
+// Global request logging
+app.use(requestLogger);
 
 /**
  * Status endpoint for monitoring
@@ -68,11 +72,21 @@ if (fs.existsSync(clientIndexPath)) {
 
 /**
  * Global error handling middleware
+ * Catches all errors and returns standardized JSON response
+ * Does not leak stack traces in production
  */
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  
+  console.error(`[ERROR] ${err.name || 'Error'}: ${err.message}`);
+  if (isDevelopment) {
+    console.error(err.stack);
+  }
+
   res.status(err.status || 500).json({
-    error: err.message || "Internal Server Error",
+    error: err.name || "Internal Server Error",
+    message: err.message || "An unexpected error occurred",
+    ...(isDevelopment && { stack: err.stack })
   });
 });
 
