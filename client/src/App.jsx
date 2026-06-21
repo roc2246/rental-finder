@@ -31,10 +31,14 @@ function App() {
           : {};
 
         const sort = { [sortBy]: 1 };
-        const data = await fetchLib.fetchListings(filters, page, 20, sort);
+        const response = await fetchLib.fetchListings(filters, page, 20, sort);
         
-        setListings(data.results || []);
-        setTotalPages(data.totalPages || 1);
+        // Handle new API response format: { data: [...], meta: {...} }
+        const listings = response.data || response.results || [];
+        const totalPages = response.meta?.totalPages || response.totalPages || 1;
+        
+        setListings(listings);
+        setTotalPages(totalPages);
       } catch (err) {
         console.error("failed to load listings", err);
         setListings([]);

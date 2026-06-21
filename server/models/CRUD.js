@@ -148,3 +148,64 @@ export async function getRentals(
     throw err;
   }
 }
+
+/**
+ * Get a rental by MongoDB ID
+ * @param {string} id - MongoDB object ID
+ * @returns {Object|null} - rental or null if not found
+ */
+export async function getRentalById(id) {
+  try {
+    const rental = await RentalSchema.findById(id).lean().exec();
+    return rental || null;
+  } catch (err) {
+    console.error("Error fetching rental by ID:", err);
+    throw err;
+  }
+}
+
+/**
+ * Update a rental by MongoDB ID
+ * @param {string} id - MongoDB object ID
+ * @param {Object} updates - fields to update
+ * @returns {Object|null} - updated rental or null if not found
+ */
+export async function updateRentalById(id, updates) {
+  try {
+    if (!id || !updates) {
+      throw new Error("ID and updates are required");
+    }
+
+    const updated = await RentalSchema.findByIdAndUpdate(
+      id,
+      { $set: updates },
+      { returnDocument: "after", runValidators: true }
+    )
+      .lean()
+      .exec();
+
+    return updated || null;
+  } catch (err) {
+    console.error("Error updating rental by ID:", err);
+    throw err;
+  }
+}
+
+/**
+ * Delete a rental by MongoDB ID
+ * @param {string} id - MongoDB object ID
+ * @returns {Object|null} - deleted rental or null if not found
+ */
+export async function deleteRentalById(id) {
+  try {
+    if (!id) {
+      throw new Error("ID is required");
+    }
+
+    const deleted = await RentalSchema.findByIdAndDelete(id).lean().exec();
+    return deleted || null;
+  } catch (err) {
+    console.error("Error deleting rental by ID:", err);
+    throw err;
+  }
+}

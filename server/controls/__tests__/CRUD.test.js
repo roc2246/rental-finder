@@ -43,7 +43,15 @@ describe('manageRentalRetrieval', () => {
       await controls.manageRentalRetrieval(req, res);
 
       expect(models.getRentals).toHaveBeenCalledWith({}, 1, 20, { dailyRate: 1 });
-      expect(res.json).toHaveBeenCalledWith(mockRentals);
+      expect(res.json).toHaveBeenCalledWith({
+        data: mockRentals.results,
+        meta: {
+          total: mockRentals.total,
+          page: mockRentals.page,
+          pageSize: mockRentals.pageSize,
+          totalPages: mockRentals.totalPages
+        }
+      });
     });
 
     it('applies filters from query parameters', async () => {
@@ -108,7 +116,15 @@ describe('manageRentalRetrieval', () => {
 
       await controls.manageRentalRetrieval(req, res);
 
-      expect(res.json).toHaveBeenCalledWith(mockResponse);
+      expect(res.json).toHaveBeenCalledWith({
+        data: mockResponse.results,
+        meta: {
+          total: mockResponse.total,
+          page: mockResponse.page,
+          pageSize: mockResponse.pageSize,
+          totalPages: mockResponse.totalPages
+        }
+      });
       expect(res.json).toHaveBeenCalledTimes(1);
     });
   });
@@ -366,7 +382,10 @@ describe('manageRentalRetrieval', () => {
       await controls.manageRentalRetrieval(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Database connection failed' });
+      expect(res.json).toHaveBeenCalledWith({
+        error: 'Database connection failed',
+        message: 'Failed to retrieve rentals'
+      });
     });
 
     it('handles generic Error type', async () => {
@@ -376,7 +395,10 @@ describe('manageRentalRetrieval', () => {
       await controls.manageRentalRetrieval(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Something went wrong' });
+      expect(res.json).toHaveBeenCalledWith({
+        error: 'Something went wrong',
+        message: 'Failed to retrieve rentals'
+      });
     });
 
     it('handles errors with custom messages', async () => {
@@ -385,7 +407,10 @@ describe('manageRentalRetrieval', () => {
 
       await controls.manageRentalRetrieval(req, res);
 
-      expect(res.json).toHaveBeenCalledWith({ error: 'Validation failed: missing city filter' });
+      expect(res.json).toHaveBeenCalledWith({
+        error: 'Validation failed: missing city filter',
+        message: 'Failed to retrieve rentals'
+      });
     });
 
     it('handles timeout errors', async () => {
@@ -395,7 +420,10 @@ describe('manageRentalRetrieval', () => {
       await controls.manageRentalRetrieval(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Query timeout' });
+      expect(res.json).toHaveBeenCalledWith({
+        error: 'Query timeout',
+        message: 'Failed to retrieve rentals'
+      });
     });
 
     it('handles network errors', async () => {
@@ -414,7 +442,10 @@ describe('manageRentalRetrieval', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ error: 'Unknown error occurred' })
+        expect.objectContaining({
+          error: 'Unknown error occurred',
+          message: 'Failed to retrieve rentals'
+        })
       );
     });
 
@@ -425,7 +456,10 @@ describe('manageRentalRetrieval', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ error: 'Unknown error occurred' })
+        expect.objectContaining({
+          error: 'Unknown error occurred',
+          message: 'Failed to retrieve rentals'
+        })
       );
     });
   });

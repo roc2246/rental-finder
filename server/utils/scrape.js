@@ -30,7 +30,7 @@ async function readLocalFile(url) {
  * @private
  * @param {string} data - HTML content to parse
  * @param {string} site - Website name matching key in siteDir
- * @returns {Array<{title: string, price: string, location: string}>} - Extracted rental data
+ * @returns {Array<{title: string, price: string, location: string, dailyRate: number}>} - Extracted rental data
  */
 function findData(data, site) {
   const $ = load(data);
@@ -39,7 +39,11 @@ function findData(data, site) {
     const title = $(element).find(siteDir[site].title).text().trim();
     const price = $(element).find(siteDir[site].price).text().trim();
     const location = $(element).find(siteDir[site].location).text().trim();
-    rentals.push({ title, price, location });
+    
+    // Extract numeric value from price string (e.g., "$2,450" -> 2450)
+    const dailyRate = parseInt(price.replace(/[\$,]/g, '')) || 0;
+    
+    rentals.push({ title, price, location, dailyRate });
   });
   return rentals;
 }
@@ -69,7 +73,7 @@ async function manageData(url) {
  * Supports both live URLs and mock HTML files
  * @async
  * @param {string} url - URL (http/https) or local file path to HTML
- * @returns {Promise<Array<{title: string, price: string, location: string}>>} - Array of rental listings
+ * @returns {Promise<Array<{title: string, price: string, location: string, dailyRate: number}>>} - Array of rental listings
  * @throws {Error} - Logs error and rethrows if scraping fails
  * @example
  * const rentals = await scrapeRentals('http://example-rentals.com');

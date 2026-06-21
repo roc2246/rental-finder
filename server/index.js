@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import cors from "cors";
 import { connectDB } from "./models/db.js";
 import initializeChron from "./chron/index.js";
 
@@ -18,8 +19,17 @@ const clientIndexPath = path.resolve(clientDistPath, "index.html");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
+// CORS configuration
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN || "*",
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 
 /**
  * Status endpoint for monitoring

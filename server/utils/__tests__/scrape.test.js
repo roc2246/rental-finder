@@ -33,7 +33,7 @@ describe('scrapeRentals', () => {
 
       const results = await scrape.scrapeRentals('http://example.com');
       expect(results).toEqual([
-        { title: 'Title A', price: '$1000', location: 'Cityville' }
+        { title: 'Title A', price: '$1000', location: 'Cityville', dailyRate: 1000 }
       ]);
     });
 
@@ -61,8 +61,11 @@ describe('scrapeRentals', () => {
       const results = await scrape.scrapeRentals('http://example.com');
       expect(results).toHaveLength(3);
       expect(results[0].title).toBe('Apt 1');
+      expect(results[0].dailyRate).toBe(1000);
       expect(results[1].title).toBe('Apt 2');
+      expect(results[1].dailyRate).toBe(1200);
       expect(results[2].title).toBe('Apt 3');
+      expect(results[2].dailyRate).toBe(1500);
     });
   });
 

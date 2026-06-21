@@ -19,8 +19,13 @@ describe("App", () => {
   beforeEach(() => {
     vi.stubEnv("VITE_SERVER_ORIGIN", "http://localhost:3000");
     fetchLib.fetchListings.mockResolvedValue({
-      results: SAMPLE_LISTINGS,
-      totalPages: 1,
+      data: SAMPLE_LISTINGS,
+      meta: {
+        total: SAMPLE_LISTINGS.length,
+        page: 1,
+        pageSize: 20,
+        totalPages: 1,
+      },
     });
     // Suppress expected console.error calls from the error-handling tests
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -107,8 +112,13 @@ describe("App", () => {
 
   it("shows pagination when totalPages > 1", async () => {
     fetchLib.fetchListings.mockResolvedValue({
-      results: SAMPLE_LISTINGS,
-      totalPages: 3,
+      data: SAMPLE_LISTINGS,
+      meta: {
+        total: SAMPLE_LISTINGS.length,
+        page: 1,
+        pageSize: 20,
+        totalPages: 3,
+      },
     });
     render(<App />);
     await waitFor(() => {
@@ -119,8 +129,13 @@ describe("App", () => {
 
   it("displays the current page indicator", async () => {
     fetchLib.fetchListings.mockResolvedValue({
-      results: SAMPLE_LISTINGS,
-      totalPages: 3,
+      data: SAMPLE_LISTINGS,
+      meta: {
+        total: SAMPLE_LISTINGS.length,
+        page: 1,
+        pageSize: 20,
+        totalPages: 3,
+      },
     });
     render(<App />);
     await waitFor(() => expect(screen.getByText("1 / 3")).toBeInTheDocument());
@@ -146,8 +161,13 @@ describe("App", () => {
 
   it("resets to page 1 when the sort changes while viewing page 2", async () => {
     fetchLib.fetchListings.mockResolvedValue({
-      results: SAMPLE_LISTINGS,
-      totalPages: 3,
+      data: SAMPLE_LISTINGS,
+      meta: {
+        total: SAMPLE_LISTINGS.length,
+        page: 1,
+        pageSize: 20,
+        totalPages: 3,
+      },
     });
     const user = userEvent.setup();
     render(<App />);
@@ -184,8 +204,13 @@ describe("App", () => {
 
   it("resets to page 1 when the location query changes while viewing page 2", async () => {
     fetchLib.fetchListings.mockResolvedValue({
-      results: SAMPLE_LISTINGS,
-      totalPages: 3,
+      data: SAMPLE_LISTINGS,
+      meta: {
+        total: SAMPLE_LISTINGS.length,
+        page: 1,
+        pageSize: 20,
+        totalPages: 3,
+      },
     });
     const user = userEvent.setup();
     render(<App />);
