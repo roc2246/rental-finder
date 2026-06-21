@@ -1,5 +1,8 @@
 # Server Test Files Reference
 
+> Status note: this file maps test locations and intent. For current
+> totals and failures, run `npx vitest run` in `server/`.
+
 ## Quick File Locations & Contents
 
 ### Models Tests
@@ -136,7 +139,7 @@ server/__tests__/
 | Controls | 95+ | Unit + Mock |
 | Utils | 185+ | Unit + Edge Cases |
 | Server | 35+ | Unit + Mock |
-| **TOTAL** | **430+** | **All Types** |
+| **TOTAL** | Run `npx vitest run` | Current status source |
 
 ## Test Execution Order (Recommended)
 

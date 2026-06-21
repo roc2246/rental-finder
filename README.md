@@ -27,10 +27,8 @@ used by the scraper during testing.
 * Express API with health check and listings endpoints
 * React front‑end offering filtering by ZIP/sort and pagination
 * Batch utilities and cron scheduling for automated data refresh
-* Fully tested server components (430+ tests) using Vitest and
-  mongodb-memory-server
-* Fully tested client components (100 tests) using Vitest and React
-  Testing Library
+* Automated server and client testing using Vitest and React Testing
+  Library
 
 ---
 
@@ -96,6 +94,16 @@ MONGO_URI=mongodb://localhost:27017/rentalfinder
 PORT=3000
 ```
 
+Additional server environment variables:
+
+```
+JWT_SECRET=replace-with-strong-secret
+CORS_ORIGIN=http://localhost:5173
+CRON_SCHEDULE=*/5 * * * *
+BATCH_SIZE=10
+NODE_ENV=development
+```
+
 ### Client
 
 ```bash
@@ -122,10 +130,28 @@ frontend is configured (via Vite proxy) to forward `/api` calls to the
 same origin.
 
 Endpoints:
-* `GET /` – simple greeting
+* `GET /` – API info (when client build is not present)
 * `GET /health` – `{ status: "ok" }`
 * `GET /api/rentals` and `/api/listings` – fetch listings with query
-  params (filters, page, pagesize, sort)
+  params (filters, page, pagesize/pageSize, sort)
+* `GET /api/rentals/:id` – fetch single rental by id
+* `POST /api/rentals` – create rental (JWT + admin/agent)
+* `PUT /api/rentals/:id` – update rental (JWT + admin/agent)
+* `DELETE /api/rentals/:id` – delete rental (JWT + admin)
+
+Collection response format:
+
+```json
+{
+  "data": [],
+  "meta": {
+    "total": 0,
+    "page": 1,
+    "pageSize": 20,
+    "totalPages": 0
+  }
+}
+```
 
 Query parameters can be provided as JSON objects or strings, e.g.
 `?filters={"city":"Boston"}&page=2&sort={"price":-1}`.
@@ -163,8 +189,8 @@ mocked HTML pages under `mock-websites/` support scraper tests.
 
 ### Client
 
-The client contains 100 unit and integration tests covering every
-component, section, and utility module.  To execute:
+The client contains unit and integration tests covering app behavior,
+sections, components, and utility modules. To execute:
 
 ```bash
 cd client
@@ -209,9 +235,9 @@ npm run test:watch  # re-run on file changes
 
 ## 📄 Additional Documentation
 
-* **Server docs** – see `server/SERVER.md for in‑depth server
+* **Server docs** – see `server/SERVER.md` for in‑depth server
   architecture and API details.
-* **Testing notes** – `server/TESTING-GUIDE.md summarizes the test
+* **Testing notes** – `server/TESTING-GUIDE.md` summarizes the test
   coverage.
 * **Server configuration** – environment variables and how the cron
   scheduler works.
@@ -233,4 +259,4 @@ https://github.com/roc2246/rental-finder.
 ---
 
 Thanks for exploring Rental Finder! Feel free to reach out with
-questions or improvements. 😊
+questions or improvements.

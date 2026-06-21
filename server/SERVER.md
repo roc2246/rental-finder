@@ -68,15 +68,45 @@ or with camel‑case names (supported for convenience):
 #### Response
 ```json
 {
-  "results": [
+  "data": [
     { "title": "...", "price": "...", "location": "..." },
     ...
   ],
-  "total": 45,
-  "page": 1,
-  "pageSize": 20,
-  "totalPages": 3
+  "meta": {
+    "total": 45,
+    "page": 1,
+    "pageSize": 20,
+    "totalPages": 3
+  }
 }
+```
+
+### Single Rental
+```
+GET /api/rentals/:id
+Response: { data: { ...rental } }
+```
+
+### Create Rental (Protected)
+```
+POST /api/rentals
+Requires: Authorization: Bearer <token>
+Allowed Roles: admin, agent
+```
+
+### Update Rental (Protected)
+```
+PUT /api/rentals/:id
+Requires: Authorization: Bearer <token>
+Allowed Roles: admin, agent
+```
+
+### Delete Rental (Protected)
+```
+DELETE /api/rentals/:id
+Requires: Authorization: Bearer <token>
+Allowed Roles: admin
+Response: 204 No Content
 ```
 
 ## Key Components
@@ -85,19 +115,23 @@ or with camel‑case names (supported for convenience):
 - **db.js**: Establishes MongoDB connection via mongoose
 - **CRUD.js**: Core database operations
   - `addRental()`: Insert new rental, prevents duplicates by listingURL
-  - `updateRental()`: Update rental fields
-  - `deleteRental()`: Delete rental (soft delete by default)
+  - `updateRentalById()`: Update rental fields by MongoDB id
+  - `deleteRentalById()`: Delete rental by MongoDB id
   - `getRentals()`: Fetch and paginate rentals with filtering
 
 ### Controls (`server/controls/`)
 - **CRUD.js**: HTTP request handler
-  - `manageRentalRetrieval()`: Processes GET /rentals requests, validates query params, returns paginated results
+  - `manageRentalRetrieval()`: Returns collection responses in `{ data, meta }` format
+  - `getRental()`: Returns single rental by id
+  - `createRental()`: Creates rental with validation and conflict handling
+  - `updateRental()`: Updates rental by id
+  - `deleteRental()`: Deletes rental by id
 
 ### Utils (`server/utils/`)
 - **scrape.js**: Web scraping functions
   - `scrapeRentals(url)`: Parses HTML from URL or local file, extracts rental listings
 - **CRUD.js**: Batch processing utility
-  - `manageBatchSize(batchSize, data, modelFunc)`: Processes large datasets in configurable batches
+  - `manageBatchSize(batchSize, data, modelFunc)`: Processes large datasets in batches and returns success/failure counts
 - **site-dir.js**: CSS selector mappings for different rental websites
 
 ## Configuration
@@ -106,6 +140,11 @@ Environment variables must be set in `config/.env`:
 ```
 MONGO_URI=mongodb://localhost:27017/rentalfinder
 PORT=3000
+JWT_SECRET=replace-with-strong-secret
+CORS_ORIGIN=http://localhost:5173
+CRON_SCHEDULE=*/5 * * * *
+BATCH_SIZE=10
+NODE_ENV=development
 ```
 
 ## Running Tests
@@ -158,6 +197,7 @@ Tests HTTP endpoint handling:
 - Database errors: Return 500 with error message
 - Invalid input: Defaults applied (e.g., page=1, pagesize=20)
 - Scraping errors: Logged to console, error thrown
+- Authentication errors: Return 401/403 with standardized JSON response
 
 ## Performance Considerations
 

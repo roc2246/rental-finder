@@ -1,11 +1,17 @@
 # Comprehensive Test Suite Documentation
 
+> Status note: this document describes test intent and coverage areas.
+> For current pass/fail counts and totals, run `npx vitest run` in
+> `server/`.
+
 ## Overview
 The rental-finder server now has extensive test coverage across all major components. This document details what has been tested and the coverage provided.
 
 ## Test Coverage Summary
 
-### Total Test Count: 200+ test cases
+### Total Test Count
+
+Use the latest Vitest run output as the authoritative count.
 
 ## 1. Models Layer Tests (`server/models/__tests__/`)
 
