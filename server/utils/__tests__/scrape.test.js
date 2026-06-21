@@ -110,7 +110,7 @@ describe('scrapeRentals', () => {
       axios.get.mockResolvedValue({ data: html });
 
       const results = await scrape.scrapeRentals('http://example.com');
-      expect(results[0].location).toBe('');
+      expect(results).toEqual([]);
     });
 
     it('handles HTML with missing title field', async () => {
@@ -124,7 +124,7 @@ describe('scrapeRentals', () => {
       axios.get.mockResolvedValue({ data: html });
 
       const results = await scrape.scrapeRentals('http://example.com');
-      expect(results[0].title).toBe('');
+      expect(results).toEqual([]);
     });
 
     it('trims whitespace from extracted text', async () => {
@@ -320,7 +320,7 @@ describe('scrapeRentals', () => {
       axios.get.mockRejectedValue(error);
 
       await expect(scrape.scrapeRentals('http://slow')).rejects.toThrow('ETIMEDOUT');
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Error scraping rentals:', error);
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error scraping http://slow:', 'ETIMEDOUT');
     });
 
     it('logs and rethrows connection refused errors', async () => {

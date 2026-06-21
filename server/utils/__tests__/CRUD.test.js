@@ -111,11 +111,11 @@ describe('manageBatchSize', () => {
   describe('Data Handling', () => {
     it('handles empty data array', async () => {
       const data = [];
-
-      await utils.manageBatchSize(10, data, mockFunction);
-
       expect(mockFunction).toHaveBeenCalledTimes(0);
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('0 rentals processed'));
+      const results = await utils.manageBatchSize(10, data, mockFunction);
+      expect(results.succeeded).toBe(0);
+      expect(results.failed).toBe(0);
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('0 succeeded'));
     });
 
     it('handles single item', async () => {
@@ -192,10 +192,11 @@ describe('manageBatchSize', () => {
   describe('Success/Failure Counting', () => {
     it('logs count of successfully processed items', async () => {
       const data = [{ id: 1 }, { id: 2 }, { id: 3 }];
-
-      await utils.manageBatchSize(10, data, mockFunction);
-
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('3 rentals processed'));
+      mockFunction.mockResolvedValue(true);
+      const results = await utils.manageBatchSize(10, data, mockFunction);
+      expect(results.succeeded).toBe(3);
+      expect(results.failed).toBe(0);
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('3 succeeded'));
     });
 
     it('counts only fulfilled promises, ignoring rejections', async () => {
@@ -206,11 +207,10 @@ describe('manageBatchSize', () => {
         }
         return item;
       });
-
-      await utils.manageBatchSize(2, data, mixedFunction);
-
-      // Only odd numbers should be fulfilled (1, 3) - 2 successful
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('2 rentals processed'));
+      const results = await utils.manageBatchSize(2, data, mixedFunction);
+      expect(results.succeeded).toBe(2);
+      expect(results.failed).toBe(3);
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('2 succeeded'));
     });
 
     it('handles all rejections without throwing', async () => {
@@ -218,10 +218,10 @@ describe('manageBatchSize', () => {
       const alwaysFails = vi.fn(async () => {
         throw new Error('Always fails');
       });
-
-      await utils.manageBatchSize(10, data, alwaysFails);
-
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('0 rentals processed'));
+      const results = await utils.manageBatchSize(10, data, alwaysFails);
+      expect(results.succeeded).toBe(0);
+      expect(results.failed).toBe(3);
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('0 succeeded'));
     });
 
     it('handles mixed success/failure in same batch', async () => {
@@ -232,11 +232,10 @@ describe('manageBatchSize', () => {
         }
         return item;
       });
-
-      await utils.manageBatchSize(3, data, mixedFunction);
-
-      // 4 successful (0, 1, 3, 5)
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('4 rentals processed'));
+      const results = await utils.manageBatchSize(3, data, mixedFunction);
+      expect(results.succeeded).toBe(4);
+      expect(results.failed).toBe(2);
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('4 succeeded'));
     });
 
     it('counts successful items across multiple batches', async () => {
@@ -246,10 +245,10 @@ describe('manageBatchSize', () => {
         successCount++;
         return item;
       });
-
-      await utils.manageBatchSize(3, data, trackingFunction);
-
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('10 rentals processed'));
+      const results = await utils.manageBatchSize(3, data, trackingFunction);
+      expect(results.succeeded).toBe(10);
+      expect(results.failed).toBe(0);
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('10 succeeded'));
     });
 
     it('handles function that returns falsy values', async () => {
@@ -257,11 +256,10 @@ describe('manageBatchSize', () => {
       const returnsFalsy = vi.fn(async () => {
         return null; // Returns null instead of the item
       });
-
-      await utils.manageBatchSize(10, data, returnsFalsy);
-
-      // Promise.allSettled treats resolved null as fulfilled, all 3 counted
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('3 rentals processed'));
+      const results = await utils.manageBatchSize(10, data, returnsFalsy);
+      expect(results.succeeded).toBe(3);
+      expect(results.failed).toBe(0);
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('3 succeeded'));
     });
 
     it('filters by truthy return values only', async () => {
@@ -327,11 +325,10 @@ describe('manageBatchSize', () => {
         if (item === 2) throw new Error('Error on 2');
         return item;
       });
-
-      // Should not throw despite having one failure
-      await utils.manageBatchSize(10, data, mixes);
-
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('2 rentals processed'));
+      const results = await utils.manageBatchSize(10, data, mixes);
+      expect(results.succeeded).toBe(2);
+      expect(results.failed).toBe(1);
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('2 succeeded'));
     });
   });
 
@@ -402,11 +399,10 @@ describe('manageBatchSize', () => {
 
     it('preserves accuracy with extreme batch sizes', async () => {
       const data = Array.from({ length: 50 }, (_, i) => i);
-
-      await utils.manageBatchSize(1000000, data, mockFunction);
-
+      const results = await utils.manageBatchSize(1000000, data, mockFunction);
       expect(mockFunction).toHaveBeenCalledTimes(50);
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('50 rentals processed'));
+      expect(results.succeeded).toBe(50);
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('50 succeeded'));
     });
   });
 
@@ -414,10 +410,9 @@ describe('manageBatchSize', () => {
     it('logs with function call count', async () => {
       const data = [1, 2];
       const namedFunction = vi.fn(async (item) => item);
-
-      await utils.manageBatchSize(10, data, namedFunction);
-
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('2 rentals processed'));
+      const results = await utils.manageBatchSize(10, data, namedFunction);
+      expect(results.succeeded).toBe(2);
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('2 succeeded'));
       expect(namedFunction).toHaveBeenCalledTimes(2);
     });
 
@@ -427,21 +422,20 @@ describe('manageBatchSize', () => {
         if (item < 5) return item;
         throw new Error('Skip');
       });
-
-      await utils.manageBatchSize(3, data, selectiveFunction);
-
-      // Items [0,1,2,3,4] succeed, [5-9] fail
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('5 rentals processed'));
+      const results = await utils.manageBatchSize(3, data, selectiveFunction);
+      expect(results.succeeded).toBe(5);
+      expect(results.failed).toBe(5);
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('5 succeeded'));
     });
 
     it('logs even when no items are processed', async () => {
       const data = [];
       mockFunction.mockName('test');
-
-      await utils.manageBatchSize(10, data, mockFunction);
-
+      const results = await utils.manageBatchSize(10, data, mockFunction);
+      expect(results.succeeded).toBe(0);
+      expect(results.failed).toBe(0);
       const calls = consoleSpy.mock.calls;
-      expect(calls.some(call => call[0].includes('0 rentals'))).toBe(true);
+      expect(calls.some(call => call[0].includes('0 succeeded'))).toBe(true);
     });
   });
 });
